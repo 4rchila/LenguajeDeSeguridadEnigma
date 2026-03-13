@@ -1,0 +1,15 @@
+  analizador_lexico/
+  ├── lexer/
+  │   ├── tokens.py         ← Jordi Garcia
+  │   ├── lexer.py          ← Jordi Garcia
+  │   └── error_handler.py  ← Jordi Garcia
+  ├── gui/
+  │   ├── main_window.py    ← Victor Morales
+  │   ├── code_editor.py    ← Victor Morales
+  │   └── token_table.py    ← Victor Morales
+  ├── controller.py          ← German Archila
+  ├── tests/
+  │   └── test_cases.py     ← German Archila
+  ├── examples/              ← German Archila
+  ├── main.py  
+  └── requirements.txt
