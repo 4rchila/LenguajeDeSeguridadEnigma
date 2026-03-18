@@ -1,0 +1,14 @@
+6.1 Requisitos previos
+•	Python 3.11 o superior instalado en el sistema.
+•	Gestor de paquetes pip actualizado a la versión más reciente.
+•	Sistema operativo: Windows 10+, macOS 12+ o Linux (Ubuntu 20.04+).
+
+6.2 Instalación de dependencias
+  pip install PyQt6
+
+6.3 Ejecución del programa
+  python main.py
+
+6.4 Ejecución de pruebas
+  python -m pytest tests/test_cases.py -v
+
