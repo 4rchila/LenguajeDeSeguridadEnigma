@@ -9,21 +9,21 @@ from PyQt6.QtGui import (
 class SyntaxHighlighter(QSyntaxHighlighter):
     PALABRAS_RESERVADAS = [
         # Estructura
-        "Definir", "Rol", "Usuario", "Modulo",
+        "Definir", "definir", "Rol", "rol", "Usuario", "usuario", "Modulo", "modulo",
         # Seguridad
-        "Permitir", "Denegar", "Acceder", "Validar",
+        "Permitir", "permitir", "Denegar", "denegar", "Acceder", "acceder", "Validar", "validar",
         # Acciones
-        "Consultar", "Registrar", "Modificar", "Eliminar", "Insertar",
+        "Consultar", "consultar", "Registrar", "registrar", "Modificar", "modificar", "Eliminar", "eliminar", "Insertar", "insertar",
         # Control de flujo
-        "Si", "Entonces", "Sino", "Mientras", "Elegir", "Caso", "Terminar",
+        "Si", "si", "Entonces", "entonces", "Sino", "sino", "Mientras", "mientras", "Elegir", "elegir", "Caso", "caso", "Terminar", "terminar",
         # Manejo de errores
-        "Intentar", "Atrapar", "Error",
+        "Intentar", "intentar", "Atrapar", "atrapar", "Error", "error",
         # Valores y tipos
-        "Verdadero", "Falso", "Cadena", "Carácter", "Horario",
+        "Verdadero", "verdadero", "Falso", "falso", "Cadena", "cadena", "Carácter", "carácter", "Horario", "horario",
         # Lógicos
-        "Y", "O", "No",
+        "Y", "y", "O", "o", "No", "no",
         # Salida
-        "Mostrar", "Devolver",
+        "Mostrar", "mostrar", "Devolver", "devolver",
     ]
 
     def __init__(self, document):
