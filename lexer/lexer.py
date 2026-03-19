@@ -2,6 +2,49 @@ import re
 from .tokens import TipoToken, Token, PALABRAS_RESERVADAS
 from .error_handler import ErrorHandler
 
+
+def _distancia_edicion(a: str, b: str) -> int:
+    """Distancia de Levenshtein entre dos cadenas (inserción, borrado, sustitución)."""
+    if not a:
+        return len(b)
+    if not b:
+        return len(a)
+    n, m = len(a), len(b)
+    prev = list(range(m + 1))
+    for i in range(1, n + 1):
+        curr = [i]
+        for j in range(1, m + 1):
+            cost = 0 if a[i - 1] == b[j - 1] else 1
+            curr.append(min(prev[j] + 1, curr[j - 1] + 1, prev[j - 1] + cost))
+        prev = curr
+    return prev[m]
+
+
+def _sugerencia_palabra_reservada(identificador: str) -> str | None:
+    """
+    Si el identificador es una palabra reservada mal escrita (distancia 1),
+    devuelve la palabra reservada sugerida; si no, None.
+    Solo considera palabras con longitud similar para evitar falsos positivos.
+    """
+    id_lower = identificador.lower()
+    # Evitar falsos positivos: si el "identificador" trae números (ej. Usuario1)
+    # o es demasiado corto (ej. variables de una letra como "e"), no sugerimos.
+    if any(ch.isdigit() for ch in id_lower):
+        return None
+    if len(id_lower) < 3:
+        return None
+    if not id_lower.isalpha():
+        return None
+    if id_lower in PALABRAS_RESERVADAS:
+        return None
+    for reservada in PALABRAS_RESERVADAS:
+        if abs(len(id_lower) - len(reservada)) > 2:
+            continue
+        if _distancia_edicion(id_lower, reservada) == 1:
+            return reservada
+    return None
+
+
 class Lexer:
     """
     Analizador Léxico principal.
@@ -15,17 +58,16 @@ class Lexer:
         ('WHITESPACE', r'[ \t]+'),
         ('NEWLINE',    r'\n'),
 
-        # 2. Literales
-        ('NUMERO_DEC', r'[0-9]+\.[0-9]+'),  # Ej: 15.5
-        ('NUMERO_ENT', r'[0-9]+'),          # Ej: 1, 10
-        ('CADENA',     r'"[^"]*"'),         # Ej: "cualquier texto"
-        
-        # Captura de cadenas sin cerrar (Error Léxico 02) 
-        ('CADENA_SIN_CERRAR', r'"[^"]*'), 
+        # 2. Literales (cadenas NO pueden contener salto de línea — Caso 8)
+        ('NUMERO_DEC', r'[0-9]+\.[0-9]+'),   # Ej: 15.5
+        ('ID_MAL_NUMERO', r'[0-9]+[a-zA-Z][a-zA-Z0-9_]*'),  # 123Gerente — Error (antes que NUMERO_ENT)
+        ('NUMERO_ENT', r'[0-9]+'),           # Ej: 1, 10
+        ('CADENA', r'"[^\n"]*"'),            # "texto" sin newline dentro (evita capturar hasta la siguiente ")
+        ('CADENA_SIN_CERRAR', r'"[^\n"]*'),  # Cadena sin cerrar en la misma línea (Error 02)
 
-        # 3. Identificadores (Nombres de usuario, roles variables...)
-        # Los identificadores pueden empezar por letra seguida de letras, números o _ -> [a-z][a-z0-9_]*
-        ('IDENTIFICADOR', r'[a-zA-Z][a-zA-Z0-9_]*'),
+        # 3. Identificadores (solo letras y números; '_' no permitido — Caso 7)
+        ('ID_MAL_GUION', r'_[a-zA-Z0-9_]*'),  # _usuario — Error (uso de _ no permitido)
+        ('IDENTIFICADOR', r'[a-zA-Z][a-zA-Z0-9]*'),
 
         # 4. Operadores Relacionales
         ('OP_REL', r'==|!=|=>|=<|>=|<=|>|<'),
@@ -34,7 +76,8 @@ class Lexer:
         ('ASIGNACION', r'='),
 
         # 6. Símbolos (Agrupación / Puntuación)
-        ('SIMBOLO', r'[(){}\[\];,]'),
+        # Incluye ':' para soportar el formato 'Caso "X":'
+        ('SIMBOLO', r'[(){}\[\];,:]'),
         
         # Otros Símbolos especiales permitidos
         ('BACKSLASH', r'\\'),
@@ -85,13 +128,47 @@ class Lexer:
                 pos_inicio_linea = match.end()
                 continue
                 
+            elif tipo_match == 'ID_MAL_GUION':
+                lexema_original = codigo_fuente[match.start():match.end()]
+                self.errores.registrar_error(
+                    "ERROR_LEX_06",
+                    lexema_original,
+                    linea_actual,
+                    columna,
+                    "Identificador mal formado: uso de _ no permitido"
+                )
+                tokens.append(Token(lexema_original, TipoToken.ERROR_LEXICO, linea_actual, columna))
+
             elif tipo_match == 'IDENTIFICADOR':
-                # Puede ser un IDENTIFICADOR real o una PALABRA_RESERVADA encubierta
+                # Puede ser PALABRA_RESERVADA, IDENTIFICADOR válido, o palabra reservada mal escrita
                 if lexema in PALABRAS_RESERVADAS:
                     tokens.append(Token(lexema, TipoToken.PALABRA_RESERVADA, linea_actual, columna))
                 else:
-                    tokens.append(Token(lexema, TipoToken.IDENTIFICADOR, linea_actual, columna))
+                    sugerencia = _sugerencia_palabra_reservada(lexema)
+                    if sugerencia is not None:
+                        lexema_original = codigo_fuente[match.start():match.end()]
+                        self.errores.registrar_error(
+                            "ERROR_LEX_04",
+                            lexema_original,
+                            linea_actual,
+                            columna,
+                            f"Palabra reservada mal escrita: '{lexema_original}'. ¿Quiso decir '{sugerencia}'?"
+                        )
+                        tokens.append(Token(lexema_original, TipoToken.ERROR_LEXICO, linea_actual, columna))
+                    else:
+                        tokens.append(Token(lexema, TipoToken.IDENTIFICADOR, linea_actual, columna))
                     
+            elif tipo_match == 'ID_MAL_NUMERO':
+                lexema_original = codigo_fuente[match.start():match.end()]
+                self.errores.registrar_error(
+                    "ERROR_LEX_05",
+                    lexema_original,
+                    linea_actual,
+                    columna,
+                    "Identificador mal formado: empieza con número"
+                )
+                tokens.append(Token(lexema_original, TipoToken.ERROR_LEXICO, linea_actual, columna))
+
             elif tipo_match == 'NUMERO_ENT':
                 tokens.append(Token(lexema, TipoToken.NUMERO_ENT, linea_actual, columna))
                 

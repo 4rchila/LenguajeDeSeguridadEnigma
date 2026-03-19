@@ -164,6 +164,7 @@ class MainWindow(QMainWindow):
 
     def _on_clear(self):
         self.code_editor.clear()
+        self.code_editor.set_lexical_errors([])
         self.token_table.clear_table()
         self.error_panel.clear_panel()
         self.lbl_tokens.setText("Tokens: 0")

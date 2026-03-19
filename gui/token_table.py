@@ -7,9 +7,11 @@ from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QColor, QFont, QBrush
 
 TOKEN_COLORS = {
-    "PALABRA_RESERVADA": ("#1e3a5f", "#60a5fa"),   
+    "PALABRA_RESERVADA": ("#1e3a5f", "#60a5fa"),
     "IDENTIFICADOR":     ("#1e3d2f", "#4ade80"),
     "NUMERO":            ("#3d2b1a", "#fb923c"),
+    "NUMERO_ENT":        ("#3d2b1a", "#fb923c"),
+    "NUMERO_DEC":        ("#3d2b1a", "#fb923c"),
     "OPERADOR":          ("#3d3415", "#facc15"),
     "SIMBOLO":           ("#1a3340", "#38bdf8"),
     "CADENA":            ("#1e3325", "#86efac"),
@@ -123,7 +125,8 @@ class TokenTable(QTableWidget):
             item_line.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
             item_line.setForeground(QBrush(QColor("#64748b")))
 
-            item_col = QTableWidgetItem(str(tok.col))
+            col_val = getattr(tok, "columna", None) or getattr(tok, "col", 0)
+            item_col = QTableWidgetItem(str(col_val))
             item_col.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
             item_col.setForeground(QBrush(QColor("#64748b")))
 
@@ -206,15 +209,18 @@ class ErrorPanel(QWidget):
             self.list_widget.addItem(placeholder)
             return
 
-        for tok in errors:
-            msg = (
-                f"  ✗  Ln {tok.linea}, Col {tok.col}  —  "
-                f"Carácter inválido: '{tok.lexema}'"
-            )
+        for err in errors:
+            # Soporta ErrorLexico (lexer real: linea, columna, caracter, mensaje)
+            # y formato antiguo (linea, col, lexema)
+            linea = getattr(err, "linea", 0)
+            col = getattr(err, "columna", None) or getattr(err, "col", 0)
+            texto = getattr(err, "caracter", None) or getattr(err, "lexema", "?")
+            mensaje = getattr(err, "mensaje", None) or "Carácter inválido"
+            msg = f"  ✗  Ln {linea}, Col {col}  —  {mensaje}: '{texto}'"
             item = QListWidgetItem(msg)
             item.setForeground(QBrush(QColor("#f87171")))
-            item.setData(Qt.ItemDataRole.UserRole, tok.linea)
-            item.setToolTip(f"Doble clic para navegar a la línea {tok.linea}")
+            item.setData(Qt.ItemDataRole.UserRole, linea)
+            item.setToolTip(f"Doble clic para navegar a la línea {linea}")
             self.list_widget.addItem(item)
 
     def clear_panel(self):

@@ -19,7 +19,7 @@ class SyntaxHighlighter(QSyntaxHighlighter):
         # Manejo de errores
         "Intentar", "Atrapar", "Error",
         # Valores y tipos
-        "Verdadero", "Falso", "Cadena", "Horario",
+        "Verdadero", "Falso", "Cadena", "Carácter", "Horario",
         # Lógicos
         "Y", "O", "No",
         # Salida
@@ -61,7 +61,7 @@ class SyntaxHighlighter(QSyntaxHighlighter):
 
         # Símbolos de agrupación — verde agua
         self._rules.append((
-            QRegularExpression(r"[(){}\[\];,\\]"),
+            QRegularExpression(r"[(){}\[\];,\\:]"),
             self._fmt("#34d399")
         ))
 
@@ -107,9 +107,11 @@ class CodeEditor(QPlainTextEdit):
     GUTTER_FG       = QColor("#374151")
     GUTTER_FG_CURR  = QColor("#6366f1")
     GUTTER_BORDER   = QColor("#1e2235")
+    ERROR_UNDERLINE = QColor("#f87171")
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self._lexical_errors = []  # Lista de errores para subrayado tipo Error Lens
         self._setup_font()
         self._setup_palette()
         self._setup_editor()
@@ -248,7 +250,54 @@ class CodeEditor(QPlainTextEdit):
             selection.cursor = self.textCursor()
             selection.cursor.clearSelection()
             extra.append(selection)
+        extra.extend(self._build_error_selections())
         self.setExtraSelections(extra)
+
+    def set_lexical_errors(self, errors: list):
+        """
+        Actualiza los errores léxicos para subrayar en rojo en el editor (estilo Error Lens).
+        Cada error debe tener: linea, columna, caracter (texto del error, para longitud).
+        """
+        self._lexical_errors = list(errors) if errors else []
+        self._highlight_current_line()
+
+    def _build_error_selections(self):
+        """Construye las selecciones extra para subrayar errores en rojo (ondulado)."""
+        selections = []
+        doc = self.document()
+        if not doc or not self._lexical_errors:
+            return selections
+
+        err_fmt = QTextCharFormat()
+        err_fmt.setUnderlineStyle(QTextCharFormat.UnderlineStyle.WaveUnderline)
+        err_fmt.setUnderlineColor(self.ERROR_UNDERLINE)
+        err_fmt.setForeground(self.ERROR_UNDERLINE)
+
+        for err in self._lexical_errors:
+            linea = getattr(err, "linea", 1)
+            columna = getattr(err, "columna", 1)
+            caracter = getattr(err, "caracter", "") or getattr(err, "lexema", "?")
+            length = max(1, len(caracter))
+
+            block = doc.findBlockByLineNumber(linea - 1)
+            if not block.isValid():
+                continue
+            pos = block.position() + columna - 1
+            if pos < 0:
+                pos = block.position()
+            # Límite por línea (sin incluir el \n del block) para subrayar exactamente el lexema
+            fin_linea = block.position() + len(block.text())
+            end_pos = min(pos + length, fin_linea)
+
+            cursor = QTextCursor(doc)
+            cursor.setPosition(pos)
+            cursor.setPosition(end_pos, QTextCursor.MoveMode.KeepAnchor)
+
+            sel = QTextEdit.ExtraSelection()
+            sel.format = err_fmt
+            sel.cursor = cursor
+            selections.append(sel)
+        return selections
 
     def go_to_line(self, line: int):
         cursor = QTextCursor(self.document().findBlockByLineNumber(line - 1))

@@ -33,10 +33,13 @@ Para mantener el procesador fluido, este script se encarga de recolectar, estruc
 - **`ErrorLexico` (Dataclass):** Define la anatomía del reporte de un incidente. Guarda el código del error (ej. `"ERROR_LEX_01"`), el carácter o fragmento que lo provocó, la línea, la columna y un mensaje descriptivo fácil de entender para el usuario.
 - **`ErrorHandler` (Clase Gestora):** Es la clase contenedora encargada de registrar los errores en memoria (`self.errores = []`). Tiene un método principal `registrar_error(codigo, caracter, linea, columna, mensaje)` que crea un nuevo incidente y lo acumula.
 
-**Contempla 3 errores de la Propuesta Técnica:**
-1. `ERROR_LEX_01`: Caracteres Foráneos o Símbolos no definidos (como `@` , `#`, `$`).
+**Contempla errores léxicos específicos:**
+1. `ERROR_LEX_01`: Caracteres Foráneos o Símbolos no definidos (como `@` , `#`, `$`, etc).
 2. `ERROR_LEX_02`: Cadenas Abiertas. Si se detecta una comilla de apertura `"` pero el lexer no detecta el cierre.
 3. `ERROR_LEX_03`: Números Mal Formados, por ejemplo, los que contienen varios puntos decimales `15.5.2`.
+4. `ERROR_LEX_04`: Palabras reservadas mal escritas (distancia de edición 1 con sugerencia).
+5. `ERROR_LEX_05`: Identificador mal formado: comienza con número (p. ej. `123Gerente`).
+6. `ERROR_LEX_06`: Identificador mal formado: uso de `_` no permitido (p. ej. `_usuario`).
 
 ### ¿Para qué le sirve al equipo?
 - **Víctor (Interfaz - GUI):** Si existen errores, podrá llamar al panel inferior en la ventana principal, iterando sobre la lista que le provee el método `.obtener_errores()` del manejador, e indicando la gravedad y la posición del error para ayudar al usuario.
