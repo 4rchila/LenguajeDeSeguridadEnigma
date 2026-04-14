@@ -1,183 +1,69 @@
-# LenguajeDeSeguridadEnigma
+# Compilador — Lenguaje de Control de Accesos Empresarial (Enigma)
 
 ## ¿Qué es?
-LenguajeDeSeguridadEnigma es un **analizador léxico (lexer)** para el **Lenguaje de Control de Accesos Empresarial** (fase 1 del proyecto).  
-Convierte el código fuente escrito por el usuario en una lista de `Token` y reporta **errores léxicos con línea y columna**.
+Este proyecto es la implementación de las **Fase 1 (Analizador Léxico)** y **Fase 2 (Analizador Sintáctico)** de un compilador para el **Lenguaje de Control de Accesos Empresarial (Enigma)**.
 
-La aplicación incluye una **GUI PyQt6** para:
-- Escribir/cargar un archivo `.acl`
-- Ver la tabla de tokens identificados
-- Ver errores léxicos
-- Subrayar errores léxicos en vivo dentro del editor (estilo Error Lens)
+La aplicación incluye una **GUI PyQt6** avanzada que proporciona una experiencia de desarrollo interactiva y visual para entender cómo un compilador analiza el código, incluyendo un **Modo Didáctico** con animaciones en tiempo real.
 
-## Documentación de referencia (PDFs)
-- `Propuesta_Analizador_Lexico.pdf` (arquitectura y tokens esperados)
-- `Proyecto Mini Compilador.pdf` (alfabeto, símbolos válidos y gramática)
-- `casos_prueba_analizador.pdf` (casos 1–16 para validar)
+### Características Principales Implementadas:
+- **Analizador Léxico Completo:** Escaneo de tokens, reconocimiento de patrones, y detección de errores léxicos específicos (con soporte de recuperación/distancia Levenshtein).
+- **Analizador Sintáctico Descendente (Recursive Descent):** Construcción estructurada del Árbol de Sintaxis Abstracta (AST) implementada en base a la norma BNF del lenguaje.
+- **Recuperación de Errores Sintácticos (Modo Pánico / Synchronization):** Si el código tiene un error sintáctico, el compilador sincroniza sobre delimitadores (bloques `{}`) u operadores clave para seguir analizando y encontrar más errores sin colapsar en el primero.
+- **Modo Didáctico Animado:** Simulación paso a paso:
+  1. *Fase Léxica:* Reconocimiento token por token sincronizado con el código.
+  2. *Fase Sintáctica:* Construcción iterativa (nodo a nodo) del AST visual.
+- **Error Lens e Interfaz Dinámica:** Subrayado de errores en tiempo real y ocultamiento inteligente del panel de errores (solo visible si se encuentran errores en el código).
+- **Visor de AST Gráfico y Estructurado:** El análisis produce tanto una vista de árbol clásica como un diagrama interactivo con nodos circulares y arcos autoajustables.
 
-Además, se creó la documentación de verificación:
-- `lexer/CUMPLIMIENTO_LENGUAJE.md` (lexer vs el documento del lenguaje)
-- `lexer/README_MANUAL_LEXICO.md` (explicación de componentes del lexer)
+---
 
-## Arquitectura (capas)
-El sistema se divide en módulos acoplados de forma simple:
+## Arquitectura (Capas)
 
-### 1) Capa `lexer/` (motor léxico)
-- `lexer/tokens.py`
-  - Define `TipoToken` y `Token`
-  - Contiene el set `PALABRAS_RESERVADAS` (case-insensitive)
-- `lexer/error_handler.py`
-  - Define `ErrorLexico` y el acumulador `ErrorHandler`
-  - Permite al lexer continuar aun encontrando errores
-- `lexer/lexer.py`
-  - Implementa `Lexer.tokenize(codigo: str) -> list[Token]`
-  - Produce tokens y llena `lexer.errores` con errores léxicos
+El sistema se divide en módulos fuertemente cohesivos y desacoplados:
 
-### 2) Capa `gui/` (interfaz)
-- `gui/main_window.py`
-  - Ventana principal con splitter (editor / resultados)
-  - Toolbar: `Analizar`, `Limpiar`, `Cargar archivo`
-  - Panel de errores con navegación a línea
-- `gui/code_editor.py`
-  - `QPlainTextEdit` con numeración de líneas
-  - `QSyntaxHighlighter` para resaltado básico
-  - **Error Lens**: subrayado ondulado rojo para errores léxicos
-- `gui/token_table.py`
-  - `QTableWidget` con columnas: `Lexema`, `Tipo de Token`, `Línea`, `Columna`
-  - `ErrorPanel` para listar errores léxicos
+### 1) Capa `lexer/` (Motor Léxico)
+- `lexer/tokens.py`: Define tipos de tokens (`TipoToken`) y diccionarios de palabras reservadas (case-insensitive).
+- `lexer/error_handler.py`: Gestiona los errores léxicos permitiendo al escáner reportar en cadena sin interrumpir a la primera.
+- `lexer/lexer.py`: Clase principal `Lexer` que consume código mediante expresiones regulares priorizadas y emite una lista de `Token`.
 
-### 3) Capa `controller.py` (conexión GUI ↔ lexer)
-- Actúa como mediador:
-  - Al presionar `Analizar`: lee el texto del editor, llama al lexer y actualiza la UI
-  - En vivo (debounce + timer): recalcula errores y actualiza el subrayado del editor
+### 2) Capa `parser/` (Motor Sintáctico)
+- `parser/ast_nodes.py`: Define el modelo de datos (las ramas y hojas) que representan todas y cada una de las expresiones y comandos (`Node`, `DeclaracionNode`, `SiNode`, `AsignacionNode`, etc.).
+- `parser/parser.py`: Clase principal `Parser`. Un analizador descendente predictivo (recursive descent). Consume la lista de tokens proveniente del lexer y los traduce en reglas gramaticales para conformar el AST o en su defecto recolectar los errores sintácticos detectados.
 
-## Cómo funciona el lexer
-### Case-insensitive
-El lexer normaliza el código a minúsculas para reconocer palabras reservadas sin importar mayúsculas/minúsculas.
+### 3) Capa `gui/` (Interfaz Gráfica - PyQt6)
+- `gui/main_window.py`: Ventana principal en pantalla completa. Aloja los páneles, los menús de control (Modo rápido / Modo didáctico) y el gestor de layout que oculta el panel de errores si no son necesarios.
+- `gui/code_editor.py`: Editor de texto con numeración de líneas que subraya en rojo ondulado los errores ("Error Lens") y cuenta con resaltos con color verde (léxico) y violeta (sintáctico) para el modo didáctico.
+- `gui/token_table.py` & `ErrorPanel`: Visualización en tablas de tokens y listado de errores de sistema con navegación activa.
+- `gui/ast_tree_viewer.py`: Árbol jerárquico tipo JSON/Carpetas de la sintaxis del lenguaje.
+- `gui/ast_graph_widget.py`: Motor gráfico personalizado de dibujo en Canvas que dibuja el AST de abajo hacia arriba de forma óptima usando círculos enlazados y flechas para denotar relaciones lógicas.
 
-### Reconocimiento por Regex (orden de patrones)
-El lexer utiliza una lista de `patrones_lexicos` y los combina en una regex maestra.  
-El **orden es importante** para resolver ambigüedades. En particular:
-- Se reconocen errores “especiales” primero cuando aplican (p. ej. cadenas sin cerrar, identificadores mal formados).
-- Luego se reconocen tokens válidos: identificadores, operadores, símbolos, números, cadenas.
+### 4) Capa `controller.py` (Coordinador)
+- Orquesta las interacciones. Configura los Timers y el pipeline cuando se interactúa con las animaciones en Modo Didáctico (pasando por estado Léxico y Estado Sintáctico de forma segura).
 
-### Reglas léxicas principales
-- **Palabras reservadas**: están en `PALABRAS_RESERVADAS`
-  - Se tokenizan como `TipoToken.PALABRA_RESERVADA`
-- **Identificadores (`IDENTIFICADOR`)**:
-  - Solo letras seguidas de letras o números
-  - **NO se permite `_`** (para cumplir el Caso 7 del documento)
-- **Números**:
-  - `NUMERO_ENT`: enteros (`[0-9]+`)
-  - `NUMERO_DEC`: decimales (`[0-9]+\.[0-9]+`)
-- **Cadenas**:
-  - `CADENA`: `"..."` sin saltos de línea
-  - `CADENA_SIN_CERRAR`: `"..."` sin cerrar dentro de la misma línea
-- **Operadores**:
-  - Relacionales: `== != => =< >= <= > <`
-  - Asignación: `=`
-- **Símbolos (`SIMBOLO`)**:
-  - Agrupación y delimitadores: `(` `)` `{` `}` `[` `]` `;` `,` `\` `:`
-  - Se aceptó `:` para soportar el formato del `switch` en los casos de prueba (`Caso "X":`).
+---
 
-## Tipos de errores léxicos
-Los errores léxicos se reportan como objetos `ErrorLexico` (almacenados en `lexer.errores`), con:
-- `codigo` (ej. `ERROR_LEX_01`)
-- `caracter` (fragmento causante)
-- `linea` y `columna`
-- `mensaje` descriptivo
+## Archivos de Prueba Incorporados
 
-Errores implementados:
-1. `ERROR_LEX_01` — carácter no reconocido (foráneo)
-   - Ej.: `Rol#Gerente`, `Usuario@1`, `Permitir$`
-2. `ERROR_LEX_02` — cadena sin comilla de cierre
-   - Ej.: `Mostrar "Acceso concedido;`
-3. `ERROR_LEX_03` — número mal formado (múltiples puntos decimales)
-   - Ej.: `15.5.2`
-4. `ERROR_LEX_04` — palabra reservada mal escrita
-   - Se detecta por **distancia de edición 1 (Levenshtein)** y se sugiere una corrección.
-   - Ej.: `Rool` -> `Rol`, `Sii` -> `Si`
-   - Para evitar falsos positivos, la detección:
-     - No sugiere si hay dígitos (ej. `Usuario1`)
-     - No sugiere si la longitud es demasiado corta
-5. `ERROR_LEX_05` — identificador mal formado: comienza con número
-   - Ej.: `123Gerente`
-6. `ERROR_LEX_06` — identificador mal formado: uso de `_` no permitido
-   - Ej.: `_usuario`
+Dentro de la subcarpeta `@examples/` se han incorporado archivos de pruebas exhaustivas.
+1. `06_estructuras_correctas.acl`: Contiene **absolutamente todos** los flujos gramaticales correctos que el código puede aceptar en el diseño del lenguaje.
+2. `07_errores_lexicos.acl`: Provisto de todos los posibles errores de escáner en caracteres aislados o cadenas sin cerrar.
+3. `08_errores_sintacticos.acl`: Estructuras desfasadas (faltan parentesis, palabras fuera de orden gramatical, múltiples tipos de llaves de cierre rotas). Su prueba corrobora que el *Analizador Sintáctico aplica Modo Pánico logrando reportar los 7 errores sin fracasar desde el primero*.
 
-## Error Lens (subrayado en vivo)
-Dentro del editor (`gui/code_editor.py`) se implementó un subrayado ondulado rojo para los errores léxicos:
-- `controller.py` usa un `QTimer` con debounce (`DEBOUNCE_MS = 450`)
-- Tras dejar de escribir, el controller ejecuta el lexer y envía errores a:
-  - `CodeEditor.set_lexical_errors(errors)`
-- El editor calcula la posición por `linea` + `columna` y subraya el lexema con:
-  - `QTextCharFormat.UnderlineStyle.WaveUnderline`
+---
 
-Al presionar `Limpiar`, se ejecuta `set_lexical_errors([])` para borrar los subrayados.
+## Ejecución del compilador
 
-## Ejemplos incluidos
-En `examples/` se agregaron programas **completos** en el lenguaje (para demostrar categorías y flujo general).
-
-Archivos:
-- `examples/01_roles_y_usuarios.acl`
-- `examples/02_reglas_seguridad.acl`
-- `examples/03_control_flujo.acl`
-- `examples/04_manejo_errores_y_salida.acl`
-- `examples/05_programa_completo.acl`
-- `examples/README.md` (descripción de cada ejemplo)
-
-Cómo probar:
-1. Ejecutar `python main.py`
-2. Click en **Cargar archivo** (📂)
-3. Seleccionar uno de los `.acl` en `examples/`
-4. Pulsar **▶ Analizar**
-
-## Verificación contra los casos de prueba (1–16)
-Se validó el lexer **programáticamente** contra los casos del PDF `casos_prueba_analizador.pdf`:
-- Los casos marcados “válidos” generan **0 errores**
-- Los casos con errores generan el número esperado de errores léxicos (y los tipos correctos)
-
-Esto incluye los ajustes necesarios:
-- Aceptar `:` como símbolo para el `switch` (`Caso "X":`)
-- Restringir identificadores para que `_` no sea válido
-- Arreglar el manejo de cadenas sin cerrar para que no “se coma” el siguiente `Mostrar ...`
-- Evitar falsos positivos en la sugerencia de palabras reservadas mal escritas
-
-## Ejecución
-### Requisitos
-- Python 3.11+ (en el entorno se usa Python 3.12)
-- Dependencia principal: PyQt6
-
-### Instalar dependencias
+### Requisitos Previos
+- Instalar Python 3.10 o superior.
+- Instalar la interfaz PyQt6:
 ```bash
 pip install PyQt6
 ```
 
-### Ejecutar la GUI
+### Iniciar la App
+Para correr el software localmente, ubicar la consola en la carpeta raíz y accionar el punto de entrada:
+
 ```bash
 python main.py
 ```
-
-## Probar el lexer sin GUI (opcional)
-Existe un script de prueba manual en:
-- `test/test_lexer_manual.py`
-
-Se puede ejecutar con:
-```bash
-python test_lexer_manual.py
-```
-
-## Archivos importantes
-- `main.py` (arranque)
-- `controller.py` (conexión + Error Lens en vivo)
-- `lexer/lexer.py` (scanner/lexer)
-- `gui/main_window.py`, `gui/code_editor.py`, `gui/token_table.py`
-
-## Estado final
-El sistema quedó **listo y funcional**:
-- Lexer conectado correctamente con GUI
-- Errores léxicos reportados con línea/columna
-- Error Lens subrayando errores en vivo
-- Coincidencia con la especificación de los PDFs
-- Coincidencia con los casos 1–16 del documento de pruebas
-
+> **Nota de uso:** El panel de errores en la parte inferior derecha estará oculto de forma intencionada e inteligente. Solamente aparecerá cuando el archivo tenga algún código erróneo.

@@ -7,12 +7,12 @@ from controller import Controller
 
 def main():
     app = QApplication(sys.argv)
-    app.setApplicationName("Analizador Léxico — Control de Accesos")
+    app.setApplicationName("Compilador — Control de Accesos")
     app.setOrganizationName("Universidad")
 
     window = MainWindow()
     controller = Controller(window)
-    window.show()
+    window.showMaximized()
 
     sys.exit(app.exec())
 

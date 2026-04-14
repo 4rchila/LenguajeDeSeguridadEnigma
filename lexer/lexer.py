@@ -116,6 +116,8 @@ class Lexer:
             lexema = match.group(tipo_match)
             # Para la columna exacta, consideramos el index del match menos el inicio de la línea.
             columna = match.start() - pos_inicio_linea + 1
+            m_start = match.start()
+            m_end = match.end()
 
             if tipo_match == 'WHITESPACE':
                 continue
@@ -125,11 +127,11 @@ class Lexer:
             
             elif tipo_match == 'NEWLINE':
                 linea_actual += 1
-                pos_inicio_linea = match.end()
+                pos_inicio_linea = m_end
                 continue
                 
             elif tipo_match == 'ID_MAL_GUION':
-                lexema_original = codigo_fuente[match.start():match.end()]
+                lexema_original = codigo_fuente[m_start:m_end]
                 self.errores.registrar_error(
                     "ERROR_LEX_06",
                     lexema_original,
@@ -137,16 +139,16 @@ class Lexer:
                     columna,
                     "Identificador mal formado: uso de _ no permitido"
                 )
-                tokens.append(Token(lexema_original, TipoToken.ERROR_LEXICO, linea_actual, columna))
+                tokens.append(Token(lexema_original, TipoToken.ERROR_LEXICO, linea_actual, columna, m_start, m_end))
 
             elif tipo_match == 'IDENTIFICADOR':
                 # Puede ser PALABRA_RESERVADA, IDENTIFICADOR válido, o palabra reservada mal escrita
                 if lexema in PALABRAS_RESERVADAS:
-                    tokens.append(Token(lexema, TipoToken.PALABRA_RESERVADA, linea_actual, columna))
+                    tokens.append(Token(lexema, TipoToken.PALABRA_RESERVADA, linea_actual, columna, m_start, m_end))
                 else:
                     sugerencia = _sugerencia_palabra_reservada(lexema)
                     if sugerencia is not None:
-                        lexema_original = codigo_fuente[match.start():match.end()]
+                        lexema_original = codigo_fuente[m_start:m_end]
                         self.errores.registrar_error(
                             "ERROR_LEX_04",
                             lexema_original,
@@ -154,12 +156,12 @@ class Lexer:
                             columna,
                             f"Palabra reservada mal escrita: '{lexema_original}'. ¿Quiso decir '{sugerencia}'?"
                         )
-                        tokens.append(Token(lexema_original, TipoToken.ERROR_LEXICO, linea_actual, columna))
+                        tokens.append(Token(lexema_original, TipoToken.ERROR_LEXICO, linea_actual, columna, m_start, m_end))
                     else:
-                        tokens.append(Token(lexema, TipoToken.IDENTIFICADOR, linea_actual, columna))
+                        tokens.append(Token(lexema, TipoToken.IDENTIFICADOR, linea_actual, columna, m_start, m_end))
                     
             elif tipo_match == 'ID_MAL_NUMERO':
-                lexema_original = codigo_fuente[match.start():match.end()]
+                lexema_original = codigo_fuente[m_start:m_end]
                 self.errores.registrar_error(
                     "ERROR_LEX_05",
                     lexema_original,
@@ -167,43 +169,43 @@ class Lexer:
                     columna,
                     "Identificador mal formado: empieza con número"
                 )
-                tokens.append(Token(lexema_original, TipoToken.ERROR_LEXICO, linea_actual, columna))
+                tokens.append(Token(lexema_original, TipoToken.ERROR_LEXICO, linea_actual, columna, m_start, m_end))
 
             elif tipo_match == 'NUMERO_ENT':
-                tokens.append(Token(lexema, TipoToken.NUMERO_ENT, linea_actual, columna))
+                tokens.append(Token(lexema, TipoToken.NUMERO_ENT, linea_actual, columna, m_start, m_end))
                 
             elif tipo_match == 'NUMERO_DEC':
-                tokens.append(Token(lexema, TipoToken.NUMERO_DEC, linea_actual, columna))
+                tokens.append(Token(lexema, TipoToken.NUMERO_DEC, linea_actual, columna, m_start, m_end))
                 
             elif tipo_match == 'CADENA':
-                lexema_original = codigo_fuente[match.start():match.end()]
-                tokens.append(Token(lexema_original, TipoToken.CADENA, linea_actual, columna))
+                lexema_original = codigo_fuente[m_start:m_end]
+                tokens.append(Token(lexema_original, TipoToken.CADENA, linea_actual, columna, m_start, m_end))
                 
             elif tipo_match == 'OP_REL' or tipo_match == 'ASIGNACION':
-                tokens.append(Token(lexema, TipoToken.OPERADOR, linea_actual, columna))
+                tokens.append(Token(lexema, TipoToken.OPERADOR, linea_actual, columna, m_start, m_end))
                 
             elif tipo_match == 'SIMBOLO' or tipo_match == 'BACKSLASH' or tipo_match == 'NEGACION_SOLA':
-                tokens.append(Token(lexema, TipoToken.SIMBOLO, linea_actual, columna))
+                tokens.append(Token(lexema, TipoToken.SIMBOLO, linea_actual, columna, m_start, m_end))
                 
             # MANEJO DE ERRORES LÉXICOS
             elif tipo_match == 'CADENA_SIN_CERRAR':
-                lexema_original = codigo_fuente[match.start():match.end()]
+                lexema_original = codigo_fuente[m_start:m_end]
                 self.errores.registrar_error(
                     "ERROR_LEX_02", lexema_original, linea_actual, columna, "Cadena de texto sin comilla de cierre"
                 )
-                tokens.append(Token(lexema_original, TipoToken.ERROR_LEXICO, linea_actual, columna))
+                tokens.append(Token(lexema_original, TipoToken.ERROR_LEXICO, linea_actual, columna, m_start, m_end))
                 
             elif tipo_match == 'NUMERO_MAL':
                 self.errores.registrar_error(
                     "ERROR_LEX_03", lexema, linea_actual, columna, "Número mal formado (Múltiples puntos decimales)"
                 )
-                tokens.append(Token(lexema, TipoToken.ERROR_LEXICO, linea_actual, columna))
+                tokens.append(Token(lexema, TipoToken.ERROR_LEXICO, linea_actual, columna, m_start, m_end))
 
             elif tipo_match == 'ERROR':
-                lexema_original = codigo_fuente[match.start():match.end()]
+                lexema_original = codigo_fuente[m_start:m_end]
                 self.errores.registrar_error(
                     "ERROR_LEX_01", lexema_original, linea_actual, columna, "Carácter no reconocido (Foráneo)"
                 )
-                tokens.append(Token(lexema_original, TipoToken.ERROR_LEXICO, linea_actual, columna))
+                tokens.append(Token(lexema_original, TipoToken.ERROR_LEXICO, linea_actual, columna, m_start, m_end))
 
         return tokens

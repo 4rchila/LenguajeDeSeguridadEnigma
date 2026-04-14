@@ -112,6 +112,10 @@ class CodeEditor(QPlainTextEdit):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._lexical_errors = []  # Lista de errores para subrayado tipo Error Lens
+        self._didactic_token_range = (-1, -1)
+        self._didactic_is_error = False
+        self._didactic_phase = 'lexer'  # 'lexer' o 'syntax'
+        
         self._setup_font()
         self._setup_palette()
         self._setup_editor()
@@ -251,6 +255,7 @@ class CodeEditor(QPlainTextEdit):
             selection.cursor.clearSelection()
             extra.append(selection)
         extra.extend(self._build_error_selections())
+        extra.extend(self._build_didactic_selections())
         self.setExtraSelections(extra)
 
     def set_lexical_errors(self, errors: list):
@@ -260,6 +265,47 @@ class CodeEditor(QPlainTextEdit):
         """
         self._lexical_errors = list(errors) if errors else []
         self._highlight_current_line()
+
+    def set_didactic_highlight(self, start_pos: int, end_pos: int, is_error: bool = False, phase: str = 'lexer'):
+        """Resalta un rango de texto temporalmente durante el modo didáctico y centra la cámara."""
+        self._didactic_token_range = (start_pos, end_pos)
+        self._didactic_is_error = is_error
+        self._didactic_phase = phase
+        self._highlight_current_line()
+        if start_pos >= 0:
+            cursor = QTextCursor(self.document())
+            cursor.setPosition(min(start_pos, self.document().characterCount() - 1))
+            self.setTextCursor(cursor)
+            self.centerCursor()
+
+    def _build_didactic_selections(self):
+        selections = []
+        if self._didactic_token_range == (-1, -1):
+            return selections
+            
+        start, end = self._didactic_token_range
+        doc = self.document()
+
+        fmt = QTextCharFormat()
+        if self._didactic_is_error:
+            fmt.setBackground(QColor("#7f1d1d"))  # Rojo oscuro
+            fmt.setForeground(QColor("#fecaca"))  # Letra clara
+        elif self._didactic_phase == 'syntax':
+            fmt.setBackground(QColor("#312e81"))  # Indigo/violeta oscuro
+            fmt.setForeground(QColor("#c7d2fe"))  # Letra lavanda
+        else:
+            fmt.setBackground(QColor("#047857"))  # Verde esmeralda oscuro
+            fmt.setForeground(QColor("#a7f3d0"))  # Letra verde claro
+        
+        cursor = QTextCursor(doc)
+        cursor.setPosition(start)
+        cursor.setPosition(end, QTextCursor.MoveMode.KeepAnchor)
+        
+        sel = QTextEdit.ExtraSelection()
+        sel.format = fmt
+        sel.cursor = cursor
+        selections.append(sel)
+        return selections
 
     def _build_error_selections(self):
         """Construye las selecciones extra para subrayar errores en rojo (ondulado)."""

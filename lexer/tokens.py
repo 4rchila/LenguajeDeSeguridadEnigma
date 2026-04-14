@@ -39,6 +39,8 @@ class Token:
     tipo: TipoToken
     linea: int
     columna: int
+    start_index: int = -1
+    end_index: int = -1  # Final absoluto del token en el documento
 
 # Diccionario de Palabras Reservadas para búsqueda rápida O(1).
 # Todas deben estar en MINÚSCULAS porque nuestro lenguaje es Case-Insensitive.

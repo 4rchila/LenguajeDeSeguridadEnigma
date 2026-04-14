@@ -48,7 +48,7 @@ class TokenTable(QTableWidget):
         hh.setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)
         hh.setSectionResizeMode(3, QHeaderView.ResizeMode.Fixed)
         self.setColumnWidth(2, 64)
-        self.setColumnWidth(3, 72)
+        self.setColumnWidth(3, 90)
 
         self.verticalHeader().setDefaultSectionSize(28)
 
@@ -140,6 +140,8 @@ class TokenTable(QTableWidget):
             self.setItem(row, 1, item_tipo)
             self.setItem(row, 2, item_line)
             self.setItem(row, 3, item_col)
+            
+        self.scrollToBottom()
 
     def clear_table(self):
         self.setRowCount(0)
@@ -203,22 +205,39 @@ class ErrorPanel(QWidget):
         self.list_widget.clear()
 
         if not errors:
-            placeholder = QListWidgetItem("  ✓  Sin errores léxicos detectados")
+            placeholder = QListWidgetItem("  ✓  Sin errores detectados")
             placeholder.setForeground(QBrush(QColor("#22c55e")))
             placeholder.setFlags(placeholder.flags() & ~Qt.ItemFlag.ItemIsSelectable)
             self.list_widget.addItem(placeholder)
             return
 
         for err in errors:
-            # Soporta ErrorLexico (lexer real: linea, columna, caracter, mensaje)
-            # y formato antiguo (linea, col, lexema)
-            linea = getattr(err, "linea", 0)
-            col = getattr(err, "columna", None) or getattr(err, "col", 0)
-            texto = getattr(err, "caracter", None) or getattr(err, "lexema", "?")
-            mensaje = getattr(err, "mensaje", None) or "Carácter inválido"
-            msg = f"  ✗  Ln {linea}, Col {col}  —  {mensaje}: '{texto}'"
+            # Determinación Dinámica (Léxico vs Sintáctico)
+            if hasattr(err, "token") and hasattr(err, "message"): 
+                # Es un ParserError (Error Sintáctico)
+                if err.token:
+                    linea = err.token.linea
+                    col = err.token.columna
+                    texto = err.token.lexema
+                else: 
+                    linea = 0
+                    col = 0
+                    texto = "EOF"
+                
+                detalle = err.message
+                msg = f"  ⚠️  [SINTÁXICO] Ln {linea}, Col {col}  —  {detalle}"
+                color = QColor("#facc15") # Amarillo brillante para advertir estructura rota
+            else:
+                # Es un ErrorLexico (Error Lexicográfico)
+                linea = getattr(err, "linea", 0)
+                col = getattr(err, "columna", None) or getattr(err, "col", 0)
+                texto = getattr(err, "caracter", None) or getattr(err, "lexema", "?")
+                mensaje = getattr(err, "mensaje", None) or "Carácter inválido no pertenece al alfabeto"
+                msg = f"  ✗  [LÉXICO] Ln {linea}, Col {col}  —  Razón: {mensaje} '{texto}'"
+                color = QColor("#f87171") # Rojo salmón por símbolo no admitido
+
             item = QListWidgetItem(msg)
-            item.setForeground(QBrush(QColor("#f87171")))
+            item.setForeground(QBrush(color))
             item.setData(Qt.ItemDataRole.UserRole, linea)
             item.setToolTip(f"Doble clic para navegar a la línea {linea}")
             self.list_widget.addItem(item)

@@ -26,7 +26,7 @@ Si Verdadero Entonces {
     Validar Ventas;
     Mostrar "Acceso concedido";
 } Sino {
-    Denegar Acceder Reportes;
+    Denegar Reportes;
     Mostrar "Acceso denegado";
 }
 
@@ -38,13 +38,13 @@ Intentar {
     Acceder Reportes;
     Mostrar "Operación exitosa";
 } Atrapar ( Error e ) {
-    Denegar Acceder Ventas;
+    Denegar Ventas;
     Mostrar "Error de seguridad";
 }
 
 Elegir ( Rol1 ) {
-    Caso "Gerente" : { Permitir Consultar Reportes; Terminar; }
-    Caso "Cajero" : { Permitir Acceder Facturacion; Terminar; }
+    Caso "Gerente" : { Permitir Consultar Reportes; } Terminar;
+    Caso "Cajero" : { Permitir Facturacion; } Terminar;
 }
 
 Devolver Verdadero;

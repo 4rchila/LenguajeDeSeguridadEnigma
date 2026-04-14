@@ -9,7 +9,7 @@ Si Verdadero Entonces {
     Permitir Consultar Ventas;
     Permitir Registrar Ventas;
 } Sino {
-    Denegar Acceder Inventario;
+    Denegar Inventario;
 }
 
 // Bucle Mientras
@@ -20,7 +20,7 @@ Mientras Verdadero {
 
 // Elegir / Caso / Terminar
 Elegir ( Rol1 ) {
-    Caso "Gerente" : { Permitir Consultar Reportes; Terminar; }
-    Caso "Cajero" : { Permitir Acceder Facturacion; Terminar; }
-    Caso "Vendedor" : { Denegar Eliminar Inventario; Terminar; }
+    Caso "Gerente" : { Permitir Consultar Reportes; } Terminar;
+    Caso "Cajero" : { Permitir Facturacion; } Terminar;
+    Caso "Vendedor" : { Denegar Eliminar Inventario; } Terminar;
 }

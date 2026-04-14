@@ -1,0 +1,77 @@
+// 06_estructuras_correctas.acl
+// Este archivo contiene TODAS las estructuras y gramáticas válidas del lenguaje Enigma.
+
+// 1. Definición de Entidades
+Definir Rol Administrador;
+Definir Usuario GestorPrincipal;
+Definir Modulo Dashboard;
+
+// 2. Asignación de Roles y Permisos (Operaciones Específicas o Simples)
+Rol Administrador = Acceder Dashboard;
+Rol Administrador = Permitir Consultar Dashboard;
+Usuario GestorPrincipal = Rol Administrador;
+
+// 3. Reglas de Validación de Seguridad
+Permitir Consultar Dashboard;
+Permitir Registrar Dashboard;
+Denegar Modificar Dashboard;
+Denegar Eliminar Dashboard;
+Permitir Insertar Dashboard;
+Acceder Dashboard;
+Validar Dashboard;
+
+// 4. Salida e Impresión
+Mostrar "Iniciando análisis de módulo Dashboard.";
+Mostrar 100;
+Mostrar 99.9;
+Mostrar Verdadero;
+
+// 5. Estructuras Condicionales Simplificadas
+Si Verdadero Entonces {
+    Permitir Consultar Dashboard;
+}
+
+// 6. Estructuras Condicionales Compuestas (Si / Sino)
+Si Falso Entonces {
+    Denegar Dashboard;
+} Sino {
+    Validar Dashboard;
+}
+
+// 7. Expresiones Lógicas o Relacionales Complejas en una Condición
+Si 100 > 50 Entonces {
+    Mostrar "El límite es correcto (Binaria)";
+}
+
+Si GestorPrincipal == Verdadero Entonces {
+    Permitir Consultar Dashboard;
+}
+
+// 8. Bucle Mientras
+Mientras Verdadero {
+    Validar Dashboard;
+    Mostrar "Ejecutando iteración de seguridad";
+}
+
+// 9. Manejo De Errores (Intentar-Atrapar)
+Intentar {
+    Acceder Dashboard;
+    Mostrar "Intento sin errores.";
+} Atrapar ( Error fallaAutenticacion ) {
+    Denegar Dashboard;
+    Mostrar "Ocurrió una falla y fue capturada.";
+}
+
+// 10. Selección Controlada (Elegir - Caso)
+Elegir ( Administrador ) {
+    Caso "Activo" : {
+        Permitir Modificar Dashboard;
+    } Terminar;
+    
+    Caso "Inactivo" : {
+        Denegar Consultar Dashboard;
+    } Terminar;
+}
+
+// 11. Finalización y Retorno
+Devolver Verdadero;

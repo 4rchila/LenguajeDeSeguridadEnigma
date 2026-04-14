@@ -16,4 +16,4 @@ Denegar Consultar Facturacion;
 
 // Condición con valor lógico
 Si Verdadero Entonces { Permitir Consultar Reportes; }
-Si Falso Entonces { Denegar Acceder Ventas; }
+Si Falso Entonces { Denegar Ventas; }

@@ -12,7 +12,7 @@ Intentar {
     Permitir Consultar Reportes;
     Acceder Ventas;
 } Atrapar ( Error ex ) {
-    Denegar Acceder Inventario;
+    Denegar Inventario;
     Mostrar "Error capturado";
 }
 
@@ -25,4 +25,4 @@ Si Verdadero Entonces {
 
 // Números y cadenas en expresiones
 Mostrar "Valor 100";
-Si 1 Entonces { Permitir Consultar; }
+Si 1 Entonces { Permitir Consultar Inventario; }

@@ -1,21 +1,23 @@
 from PyQt6.QtWidgets import (
     QMainWindow, QSplitter, QWidget, QVBoxLayout,
     QHBoxLayout, QToolBar, QStatusBar, QLabel,
-    QFileDialog, QFrame, QSizePolicy
+    QFileDialog, QFrame, QSizePolicy, QTabWidget
 )
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QIcon, QFont, QAction
 
 from gui.code_editor import CodeEditor
 from gui.token_table import TokenTable, ErrorPanel
+from gui.ast_tree_viewer import AstTreeViewer
+from gui.ast_graph_widget import AstGraphWidget
 
 
 class MainWindow(QMainWindow):
-    """Ventana principal del Analizador Léxico de Control de Accesos."""
+    """Ventana principal del Compilador de Control de Accesos."""
 
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Analizador Léxico — Control de Accesos Empresarial")
+        self.setWindowTitle("Compilador — Control de Accesos Empresarial")
         self.setMinimumSize(1100, 700)
         self.resize(1300, 800)
 
@@ -52,24 +54,51 @@ class MainWindow(QMainWindow):
         right_layout.setContentsMargins(0, 0, 0, 0)
         right_layout.setSpacing(0)
 
-        right_header = self._make_panel_header("🔍  Tokens Identificados")
+        self.resultado_tabs = QTabWidget()
+        self.resultado_tabs.setObjectName("resultadoTabs")
         self.token_table = TokenTable()
+        self.ast_viewer = AstTreeViewer()
+        self.ast_graph = AstGraphWidget()
+        self.resultado_tabs.addTab(self.token_table, "🔍 Tokens Identificados")
+        self.resultado_tabs.addTab(self.ast_viewer, "🌳 Árbol Sintáctico (AST)")
+        self.resultado_tabs.addTab(self.ast_graph, "🎯 Árbol Gráfico (AST)")
 
-        error_header = self._make_panel_header("⚠️  Errores Léxicos", accent=True)
+        # Contenedor del panel de errores (header + tabla) para ocultar/mostrar como unidad
+        self.error_container = QFrame()
+        self.error_container.setObjectName("panelFrame")
+        error_container_layout = QVBoxLayout(self.error_container)
+        error_container_layout.setContentsMargins(0, 0, 0, 0)
+        error_container_layout.setSpacing(0)
+        self.error_header = self._make_panel_header("⚠️  Errores", accent=True)
         self.error_panel = ErrorPanel()
-        self.error_panel.setMaximumHeight(160)
+        error_container_layout.addWidget(self.error_header)
+        error_container_layout.addWidget(self.error_panel)
 
-        right_layout.addWidget(right_header)
-        right_layout.addWidget(self.token_table, stretch=1)
-        right_layout.addWidget(error_header)
-        right_layout.addWidget(self.error_panel)
+        # Ocultar panel de errores por defecto
+        self.error_container.setVisible(False)
+
+        # Splitter vertical derecho: tabs arriba, errores abajo (redimensionable)
+        self.right_splitter = QSplitter(Qt.Orientation.Vertical)
+        self.right_splitter.setHandleWidth(6)
+        self.right_splitter.setObjectName("rightSplitter")
+        self.right_splitter.addWidget(self.resultado_tabs)
+        self.right_splitter.addWidget(self.error_container)
+        self.right_splitter.setStretchFactor(0, 3)
+        self.right_splitter.setStretchFactor(1, 1)
+
+        right_frame = QFrame()
+        right_frame.setObjectName("panelFrame")
+        right_layout = QVBoxLayout(right_frame)
+        right_layout.setContentsMargins(0, 0, 0, 0)
+        right_layout.setSpacing(0)
+        right_layout.addWidget(self.right_splitter)
 
         self.splitter.addWidget(left_frame)
         self.splitter.addWidget(right_frame)
 
-        self.splitter.setSizes([780, 520])
-        self.splitter.setStretchFactor(0, 3)
-        self.splitter.setStretchFactor(1, 2)
+        # 50/50 por defecto, ambos con el mismo factor de estiramiento
+        self.splitter.setStretchFactor(0, 1)
+        self.splitter.setStretchFactor(1, 1)
 
         root_layout.addWidget(self.splitter)
 
@@ -88,11 +117,31 @@ class MainWindow(QMainWindow):
         toolbar.setObjectName("mainToolbar")
         self.addToolBar(toolbar)
 
-        self.action_analyze = QAction("▶  Analizar", self)
-        self.action_analyze.setToolTip("Ejecutar análisis léxico  (Ctrl+Return)")
+        self.action_analyze = QAction("▶  Analizar Rápido", self)
+        self.action_analyze.setToolTip("Ejecutar análisis léxico instantáneo (Ctrl+Return)")
         self.action_analyze.setShortcut("Ctrl+Return")
         self.action_analyze.setObjectName("btnAnalyze")
         toolbar.addAction(self.action_analyze)
+
+        self.action_analyze_step = QAction("👁️  Modo Didáctico", self)
+        self.action_analyze_step.setToolTip("Analizar paso a paso (F10)")
+        self.action_analyze_step.setShortcut("F10")
+        self.action_analyze_step.setObjectName("btnDidactic")
+        toolbar.addAction(self.action_analyze_step)
+
+        self.action_pause = QAction("⏸  Pausa", self)
+        self.action_pause.setToolTip("Pausar / Continuar Animación (Espacio)")
+        self.action_pause.setShortcut("Space")
+        self.action_pause.setVisible(False)
+        self.action_pause.setObjectName("btnPause")
+        toolbar.addAction(self.action_pause)
+
+        self.action_stop = QAction("⏹  Finalizar", self)
+        self.action_stop.setToolTip("Finalizar análisis didáctico anticipadamente (Esc)")
+        self.action_stop.setShortcut("Esc")
+        self.action_stop.setVisible(False)
+        self.action_stop.setObjectName("btnStop")
+        toolbar.addAction(self.action_stop)
 
         toolbar.addSeparator()
 
@@ -119,19 +168,23 @@ class MainWindow(QMainWindow):
         self.lbl_lang.setObjectName("lblLang")
         toolbar.addWidget(self.lbl_lang)
 
-        self.action_clear.triggered.connect(self._on_clear)
         self.action_open.triggered.connect(self._on_open_file)
 
     def _build_statusbar(self):
         self.statusBar().setObjectName("statusBar")
 
+        self.lbl_analyzer = QLabel("Estado: Esperando...")
+        self.lbl_analyzer.setStyleSheet("color: #4c6ef5; font-weight: 600;")
+        
         self.lbl_tokens = QLabel("Tokens: 0")
         self.lbl_errors = QLabel("Errores: 0")
         self.lbl_cursor = QLabel("Ln 1, Col 1")
 
-        for lbl in (self.lbl_tokens, self.lbl_errors, self.lbl_cursor):
+        for lbl in (self.lbl_analyzer, self.lbl_tokens, self.lbl_errors, self.lbl_cursor):
             lbl.setContentsMargins(8, 0, 8, 0)
 
+        self.statusBar().addWidget(self.lbl_analyzer)
+        self.statusBar().addWidget(self._separator())
         self.statusBar().addWidget(self.lbl_tokens)
         self.statusBar().addWidget(self._separator())
         self.statusBar().addWidget(self.lbl_errors)
@@ -149,11 +202,13 @@ class MainWindow(QMainWindow):
         self.lbl_errors.setText(f"Errores: {len(errors)}")
 
         if errors:
+            self.show_error_panel()
             self.statusBar().showMessage(
                 f"Análisis completado — {len(errors)} error(es) léxico(s) encontrado(s).",
                 6000
             )
         else:
+            self.hide_error_panel()
             self.statusBar().showMessage(
                 f"Análisis completado — {len(tokens)} token(s) reconocido(s) sin errores.",
                 4000
@@ -167,9 +222,18 @@ class MainWindow(QMainWindow):
         self.code_editor.set_lexical_errors([])
         self.token_table.clear_table()
         self.error_panel.clear_panel()
+        self.hide_error_panel()
         self.lbl_tokens.setText("Tokens: 0")
         self.lbl_errors.setText("Errores: 0")
         self.statusBar().showMessage("Editor y resultados limpiados.", 3000)
+
+    def show_error_panel(self):
+        """Muestra el panel de errores y su encabezado."""
+        self.error_container.setVisible(True)
+
+    def hide_error_panel(self):
+        """Oculta el panel de errores y su encabezado."""
+        self.error_container.setVisible(False)
 
     def _on_open_file(self):
         path, _ = QFileDialog.getOpenFileName(
@@ -229,17 +293,26 @@ class MainWindow(QMainWindow):
                 color: #e2e8f0;
                 border-color: #3d4466;
             }
-            QToolBar#mainToolbar QToolButton[objectName="btnAnalyze"] {
+            QToolBar#mainToolbar QToolButton[objectName="btnAnalyze"], 
+            QToolBar#mainToolbar QToolButton[objectName="btnDidactic"] {
                 background-color: #3b5bdb;
                 color: #ffffff;
                 border-color: #4c6ef5;
                 font-weight: 600;
             }
-            QToolBar#mainToolbar QToolButton[objectName="btnAnalyze"]:hover {
+            QToolBar#mainToolbar QToolButton[objectName="btnAnalyze"]:hover,
+            QToolBar#mainToolbar QToolButton[objectName="btnDidactic"]:hover {
                 background-color: #4c6ef5;
             }
-            QToolBar#mainToolbar QToolButton[objectName="btnAnalyze"]:pressed {
+            QToolBar#mainToolbar QToolButton[objectName="btnAnalyze"]:pressed,
+            QToolBar#mainToolbar QToolButton[objectName="btnDidactic"]:pressed {
                 background-color: #2f4dc4;
+            }
+            QToolBar#mainToolbar QToolButton[objectName="btnPause"] {
+                color: #fb923c;
+            }
+            QToolBar#mainToolbar QToolButton[objectName="btnStop"] {
+                color: #ef4444;
             }
             QLabel#lblLang {
                 color: #4a5568;
@@ -252,11 +325,31 @@ class MainWindow(QMainWindow):
                 margin: 6px 4px;
             }
 
-            /* ── Paneles ── */
+            /* ── Paneles y Tabs ── */
             QFrame#panelFrame {
                 background-color: #0f1117;
                 border: 1px solid #1e2235;
                 border-radius: 8px;
+            }
+            QTabWidget::pane {
+                border: none;
+                border-top: 1px solid #1e2235;
+            }
+            QTabBar::tab {
+                background-color: #1a1d27;
+                color: #7c8db5;
+                padding: 8px 16px;
+                border: none;
+                font-weight: 500;
+            }
+            QTabBar::tab:selected {
+                background-color: #0f1117;
+                color: #5edfe2;
+                border-top: 2px solid #5edfe2;
+            }
+            QTabBar::tab:hover:!selected {
+                background-color: #252838;
+                color: #e2e8f0;
             }
             QLabel#panelHeader {
                 background-color: #1a1d27;

@@ -1,0 +1,29 @@
+// 07_errores_lexicos.acl
+// Este archivo contiene estructuras con caracteres y sintaxis que el análisis Léxico de Enigma rechazará.
+
+// 1. Uso de caracteres no permitidos (Símbolos especiales no gramaticales)
+Definir Rol @#SuperAdmin; // Caracteres @ y # no son permitidos
+Definir Modulo Modulo#$Ventas; 
+
+// 2. Comillas mal cerradas (Cadena inválida)
+Mostrar "Esta cadena de texto nunca se cierra apropiadamente y provoca error lexico ;
+
+// 3. Estructura de bloque con delimitadores de otros lenguajes o extraños
+// El backslash '\' generará un error léxico
+Si Verdadero Entonces \
+    Permitir Consultar Reportes;
+\
+
+// 4. Operador extraño
+// No tenemos definido '&&' ni '||', el lenguaje usa 'y' / 'o'
+Si Ventas && Verdadero Entonces {
+    Validar Modulo;
+}
+
+// 5. Números inválidos mezclados con letras (si no se delimita como cadena o id)
+// Un número que inicia como dígito pero incluye caracteres inválidos puros
+Mostrar 100ABC;
+
+// Resumen:
+// Al evaluar este archivo, la Tabla de Tokens mostrará las clasificaciones de ERROR_LEXICO (Resaltado en Rojo)
+// Y el Panel de Errores detallará la línea y la columna donde ocurrió.
