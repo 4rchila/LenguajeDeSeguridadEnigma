@@ -1,15 +1,28 @@
   analizador_lexico/
   ├── lexer/
-  │   ├── tokens.py         ← Jordi Garcia
-  │   ├── lexer.py          ← Jordi Garcia
-  │   └── error_handler.py  ← Jordi Garcia
+  │   ├── tokens.py              ← Jordi Garcia
+  │   ├── lexer.py               ← Jordi Garcia
+  │   └── error_handler.py       ← Jordi Garcia
+  ├── parser/
+  │   ├── ast_nodes.py           ← German Archila
+  │   └── parser.py              ← German Archila
+  ├── semantic/
+  │   ├── __init__.py            ← German Archila
+  │   ├── semantic_errors.py     ← German Archila
+  │   ├── symbol_table.py        ← German Archila
+  │   └── semantic_analyzer.py   ← German Archila
   ├── gui/
-  │   ├── main_window.py    ← Victor Morales
-  │   ├── code_editor.py    ← Victor Morales
-  │   └── token_table.py    ← Victor Morales
-  ├── controller.py          ← German Archila
+  │   ├── main_window.py         ← Victor Morales
+  │   ├── code_editor.py         ← Victor Morales
+  │   ├── token_table.py         ← Victor Morales
+  │   ├── ast_tree_viewer.py     ← Victor Morales
+  │   ├── ast_graph_widget.py    ← Victor Morales
+  │   └── symbol_table_widget.py ← Victor Morales
+  ├── controller.py              ← German Archila
   ├── tests/
-  │   └── test_cases.py     ← German Archila
-  ├── examples/              ← German Archila
-  ├── main.py  
+  │   └── test_cases.py          ← German Archila
+  ├── examples/                  ← German Archila
+  │   ├── 01_roles_y_usuarios.acl   … 08_errores_sintacticos.acl
+  │   └── 09_semantica_correcta.acl … 16_programa_completo_semantico.acl
+  ├── main.py
   └── requirements.txt

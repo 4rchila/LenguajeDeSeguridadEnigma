@@ -4,12 +4,14 @@ from PyQt6.QtWidgets import (
     QFileDialog, QFrame, QSizePolicy, QTabWidget
 )
 from PyQt6.QtCore import Qt, QSize
-from PyQt6.QtGui import QIcon, QFont, QAction
+from PyQt6.QtGui import QIcon, QFont, QAction, QPixmap
 
 from gui.code_editor import CodeEditor
 from gui.token_table import TokenTable, ErrorPanel
 from gui.ast_tree_viewer import AstTreeViewer
 from gui.ast_graph_widget import AstGraphWidget
+from gui.symbol_table_widget import SymbolTableWidget
+from gui.icons import Icons
 
 
 class MainWindow(QMainWindow):
@@ -42,7 +44,8 @@ class MainWindow(QMainWindow):
         left_layout.setContentsMargins(0, 0, 0, 0)
         left_layout.setSpacing(0)
 
-        left_header = self._make_panel_header("📝  Editor de Código  (.acl)")
+        left_header = self._make_panel_header("Editor de Código  ·  .acl",
+                                               icon=Icons.code("#5edfe2", 14))
         self.code_editor = CodeEditor()
 
         left_layout.addWidget(left_header)
@@ -59,9 +62,14 @@ class MainWindow(QMainWindow):
         self.token_table = TokenTable()
         self.ast_viewer = AstTreeViewer()
         self.ast_graph = AstGraphWidget()
-        self.resultado_tabs.addTab(self.token_table, "🔍 Tokens Identificados")
-        self.resultado_tabs.addTab(self.ast_viewer, "🌳 Árbol Sintáctico (AST)")
-        self.resultado_tabs.addTab(self.ast_graph, "🎯 Árbol Gráfico (AST)")
+        self.symbol_table_widget = SymbolTableWidget()
+
+        TAB_ICON_COLOR = "#94a3b8"
+        self.resultado_tabs.setIconSize(QSize(16, 16))
+        self.resultado_tabs.addTab(self.token_table,        Icons.list(TAB_ICON_COLOR, 16),  "Tokens")
+        self.resultado_tabs.addTab(self.ast_viewer,         Icons.tree(TAB_ICON_COLOR, 16),  "AST Texto")
+        self.resultado_tabs.addTab(self.ast_graph,          Icons.graph(TAB_ICON_COLOR, 16), "AST Gráfico")
+        self.resultado_tabs.addTab(self.symbol_table_widget, Icons.table(TAB_ICON_COLOR, 16), "Tabla de Símbolos")
 
         # Contenedor del panel de errores (header + tabla) para ocultar/mostrar como unidad
         self.error_container = QFrame()
@@ -69,7 +77,9 @@ class MainWindow(QMainWindow):
         error_container_layout = QVBoxLayout(self.error_container)
         error_container_layout.setContentsMargins(0, 0, 0, 0)
         error_container_layout.setSpacing(0)
-        self.error_header = self._make_panel_header("⚠️  Errores", accent=True)
+        self.error_header = self._make_panel_header("Errores",
+                                                     accent=True,
+                                                     icon=Icons.alert("#fb7185", 14))
         self.error_panel = ErrorPanel()
         error_container_layout.addWidget(self.error_header)
         error_container_layout.addWidget(self.error_panel)
@@ -102,42 +112,59 @@ class MainWindow(QMainWindow):
 
         root_layout.addWidget(self.splitter)
 
-    def _make_panel_header(self, title: str, accent: bool = False) -> QLabel:
-        label = QLabel(title)
-        label.setObjectName("errorHeader" if accent else "panelHeader")
-        label.setFixedHeight(32)
-        label.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
-        label.setContentsMargins(12, 0, 0, 0)
-        return label
+    def _make_panel_header(self, title: str, accent: bool = False,
+                            icon: QIcon = None) -> QWidget:
+        """Encabezado con ícono opcional + título — sin emojis."""
+        wrap = QWidget()
+        wrap.setObjectName("errorHeader" if accent else "panelHeader")
+        wrap.setFixedHeight(32)
+        layout = QHBoxLayout(wrap)
+        layout.setContentsMargins(12, 0, 12, 0)
+        layout.setSpacing(8)
+
+        if icon is not None:
+            icon_label = QLabel()
+            icon_label.setPixmap(icon.pixmap(QSize(14, 14)))
+            icon_label.setFixedSize(14, 14)
+            layout.addWidget(icon_label)
+
+        text_label = QLabel(title)
+        text_label.setObjectName("panelHeaderText")
+        layout.addWidget(text_label)
+        layout.addStretch()
+        return wrap
 
     def _build_toolbar(self):
         toolbar = QToolBar("Principal")
         toolbar.setMovable(False)
-        toolbar.setIconSize(QSize(18, 18))
+        toolbar.setIconSize(QSize(16, 16))
         toolbar.setObjectName("mainToolbar")
+        toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
         self.addToolBar(toolbar)
 
-        self.action_analyze = QAction("▶  Analizar Rápido", self)
-        self.action_analyze.setToolTip("Ejecutar análisis léxico instantáneo (Ctrl+Return)")
+        # Análisis rápido (ícono de rayo)
+        self.action_analyze = QAction(Icons.zap("#ffffff"), "Analizar Rápido", self)
+        self.action_analyze.setToolTip("Ejecutar análisis instantáneo (Ctrl+Enter)")
         self.action_analyze.setShortcut("Ctrl+Return")
         self.action_analyze.setObjectName("btnAnalyze")
         toolbar.addAction(self.action_analyze)
 
-        self.action_analyze_step = QAction("👁️  Modo Didáctico", self)
+        # Modo didáctico (ícono de pasos)
+        self.action_analyze_step = QAction(Icons.step("#ffffff"), "Modo Didáctico", self)
         self.action_analyze_step.setToolTip("Analizar paso a paso (F10)")
         self.action_analyze_step.setShortcut("F10")
         self.action_analyze_step.setObjectName("btnDidactic")
         toolbar.addAction(self.action_analyze_step)
 
-        self.action_pause = QAction("⏸  Pausa", self)
-        self.action_pause.setToolTip("Pausar / Continuar Animación (Espacio)")
+        self.action_pause = QAction(Icons.pause("#fb923c"), "Pausa", self)
+        self.action_pause.setToolTip("Pausar / Continuar animación (Espacio)")
         self.action_pause.setShortcut("Space")
         self.action_pause.setVisible(False)
         self.action_pause.setObjectName("btnPause")
         toolbar.addAction(self.action_pause)
 
-        self.action_stop = QAction("⏹  Finalizar", self)
-        self.action_stop.setToolTip("Finalizar análisis didáctico anticipadamente (Esc)")
+        self.action_stop = QAction(Icons.stop("#ef4444"), "Finalizar", self)
+        self.action_stop.setToolTip("Finalizar animación anticipadamente (Esc)")
         self.action_stop.setShortcut("Esc")
         self.action_stop.setVisible(False)
         self.action_stop.setObjectName("btnStop")
@@ -145,15 +172,15 @@ class MainWindow(QMainWindow):
 
         toolbar.addSeparator()
 
-        self.action_clear = QAction("✕  Limpiar", self)
-        self.action_clear.setToolTip("Borrar editor y resultados  (Ctrl+L)")
+        self.action_clear = QAction(Icons.x("#94a3b8"), "Limpiar", self)
+        self.action_clear.setToolTip("Borrar editor y resultados (Ctrl+L)")
         self.action_clear.setShortcut("Ctrl+L")
         toolbar.addAction(self.action_clear)
 
         toolbar.addSeparator()
 
-        self.action_open = QAction("📂  Cargar archivo", self)
-        self.action_open.setToolTip("Abrir archivo .acl  (Ctrl+O)")
+        self.action_open = QAction(Icons.folder("#94a3b8"), "Cargar archivo", self)
+        self.action_open.setToolTip("Abrir archivo .acl (Ctrl+O)")
         self.action_open.setShortcut("Ctrl+O")
         toolbar.addAction(self.action_open)
 
@@ -221,6 +248,7 @@ class MainWindow(QMainWindow):
         self.code_editor.clear()
         self.code_editor.set_lexical_errors([])
         self.token_table.clear_table()
+        self.symbol_table_widget.clear_table()
         self.error_panel.clear_panel()
         self.hide_error_panel()
         self.lbl_tokens.setText("Tokens: 0")
@@ -351,24 +379,30 @@ class MainWindow(QMainWindow):
                 background-color: #252838;
                 color: #e2e8f0;
             }
-            QLabel#panelHeader {
+            QWidget#panelHeader {
                 background-color: #1a1d27;
-                color: #7c8db5;
                 border-bottom: 1px solid #1e2235;
                 border-top-left-radius: 8px;
                 border-top-right-radius: 8px;
+            }
+            QWidget#panelHeader QLabel#panelHeaderText {
+                color: #7c8db5;
                 font-size: 11px;
                 font-weight: 600;
                 letter-spacing: 0.5px;
                 text-transform: uppercase;
+                background: transparent;
             }
-            QLabel#errorHeader {
+            QWidget#errorHeader {
                 background-color: #1a1520;
-                color: #c084fc;
                 border-bottom: 1px solid #2d1f3d;
+            }
+            QWidget#errorHeader QLabel#panelHeaderText {
+                color: #fb7185;
                 font-size: 11px;
                 font-weight: 600;
                 letter-spacing: 0.5px;
+                background: transparent;
             }
 
             /* ── Splitter ── */

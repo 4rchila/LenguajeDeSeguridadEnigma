@@ -18,13 +18,17 @@ class SyntaxHighlighter(QSyntaxHighlighter):
         "Si", "si", "Entonces", "entonces", "Sino", "sino", "Mientras", "mientras", "Elegir", "elegir", "Caso", "caso", "Terminar", "terminar",
         # Manejo de errores
         "Intentar", "intentar", "Atrapar", "atrapar", "Error", "error",
-        # Valores y tipos
-        "Verdadero", "verdadero", "Falso", "falso", "Cadena", "cadena", "Carácter", "carácter", "Horario", "horario",
+        # Valores y tipos (NOTA: 'Horario' no es keyword — es Variable_Entorno
+        # global gestionada por el Analizador Semántico, se resalta abajo).
+        "Verdadero", "verdadero", "Falso", "falso", "Cadena", "cadena", "Carácter", "carácter",
         # Lógicos
         "Y", "y", "O", "o", "No", "no",
         # Salida
         "Mostrar", "mostrar", "Devolver", "devolver",
     ]
+
+    # Variables globales ABAC (resaltado especial color violeta)
+    VARIABLES_ENTORNO = ["Horario", "horario", "MontoVenta", "montoventa", "UbicacionIP", "ubicacionip"]
 
     def __init__(self, document):
         super().__init__(document)
@@ -46,6 +50,12 @@ class SyntaxHighlighter(QSyntaxHighlighter):
         for word in self.PALABRAS_RESERVADAS:
             pattern = QRegularExpression(rf"\b{word}\b")
             self._rules.append((pattern, kw_fmt))
+
+        # Variables de entorno ABAC — violeta cursivo
+        env_fmt = self._fmt("#c084fc", italic=True)
+        for word in self.VARIABLES_ENTORNO:
+            pattern = QRegularExpression(rf"\b{word}\b")
+            self._rules.append((pattern, env_fmt))
 
         # Números — naranja suave
         self._rules.append((

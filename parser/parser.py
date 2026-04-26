@@ -412,7 +412,7 @@ class Parser:
         v_izq = self.parse_valor()
         t_op = self.get_current_token()
         
-        ops_relacionales = ["==", "!=", "<", ">", "<=", ">=", "=", "y", "o"]
+        ops_relacionales = ["==", "!=", "<", ">", "<=", ">=", "=>", "=<", "=", "y", "o"]
         
         if t_op and t_op.lexema.lower() in ops_relacionales:
             self.advance()

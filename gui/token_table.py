@@ -3,8 +3,10 @@ from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QListWidget, QListWidgetItem,
     QAbstractItemView, QLabel
 )
-from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtCore import Qt, pyqtSignal, QSize
 from PyQt6.QtGui import QColor, QFont, QBrush
+
+from gui.icons import Icons
 
 TOKEN_COLORS = {
     "PALABRA_RESERVADA": ("#1e3a5f", "#60a5fa"),
@@ -203,40 +205,48 @@ class ErrorPanel(QWidget):
 
     def populate(self, errors: list):
         self.list_widget.clear()
+        self.list_widget.setIconSize(QSize(14, 14))
 
         if not errors:
-            placeholder = QListWidgetItem("  ✓  Sin errores detectados")
+            placeholder = QListWidgetItem(Icons.check("#22c55e", 14),
+                                            "  Sin errores detectados")
             placeholder.setForeground(QBrush(QColor("#22c55e")))
             placeholder.setFlags(placeholder.flags() & ~Qt.ItemFlag.ItemIsSelectable)
             self.list_widget.addItem(placeholder)
             return
 
         for err in errors:
-            # Determinación Dinámica (Léxico vs Sintáctico)
-            if hasattr(err, "token") and hasattr(err, "message"): 
-                # Es un ParserError (Error Sintáctico)
+            # Determinación Dinámica (Léxico vs Sintáctico vs Semántico)
+            if hasattr(err, "codigo") and str(getattr(err, "codigo", "")).startswith("ERR_SEM_"):
+                linea = getattr(err, "linea", 0) or 0
+                col   = getattr(err, "columna", 0) or 0
+                codigo = err.codigo
+                mensaje = getattr(err, "mensaje", str(err))
+                msg = f"  [SEMÁNTICO · {codigo}]   Ln {linea}, Col {col}   —   {mensaje}"
+                color = QColor("#fb7185")
+                icon = Icons.shield_x(color.name(), 14)
+
+            elif hasattr(err, "token") and hasattr(err, "message"):
                 if err.token:
                     linea = err.token.linea
                     col = err.token.columna
-                    texto = err.token.lexema
-                else: 
+                else:
                     linea = 0
                     col = 0
-                    texto = "EOF"
-                
                 detalle = err.message
-                msg = f"  ⚠️  [SINTÁXICO] Ln {linea}, Col {col}  —  {detalle}"
-                color = QColor("#facc15") # Amarillo brillante para advertir estructura rota
+                msg = f"  [SINTÁCTICO]   Ln {linea}, Col {col}   —   {detalle}"
+                color = QColor("#facc15")
+                icon = Icons.alert(color.name(), 14)
             else:
-                # Es un ErrorLexico (Error Lexicográfico)
                 linea = getattr(err, "linea", 0)
                 col = getattr(err, "columna", None) or getattr(err, "col", 0)
                 texto = getattr(err, "caracter", None) or getattr(err, "lexema", "?")
                 mensaje = getattr(err, "mensaje", None) or "Carácter inválido no pertenece al alfabeto"
-                msg = f"  ✗  [LÉXICO] Ln {linea}, Col {col}  —  Razón: {mensaje} '{texto}'"
-                color = QColor("#f87171") # Rojo salmón por símbolo no admitido
+                msg = f"  [LÉXICO]   Ln {linea}, Col {col}   —   {mensaje}: '{texto}'"
+                color = QColor("#f87171")
+                icon = Icons.x_circle(color.name(), 14)
 
-            item = QListWidgetItem(msg)
+            item = QListWidgetItem(icon, msg)
             item.setForeground(QBrush(color))
             item.setData(Qt.ItemDataRole.UserRole, linea)
             item.setToolTip(f"Doble clic para navegar a la línea {linea}")

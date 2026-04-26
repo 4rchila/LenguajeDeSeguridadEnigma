@@ -1,0 +1,61 @@
+// Ejemplo 16: Programa empresarial completo con políticas RBAC + ABAC.
+// Demuestra un sistema realista que pasa las 7 validaciones semánticas.
+// Variables ABAC globales utilizadas: Horario, MontoVenta, UbicacionIP.
+
+// ─── 1. Entidades ─────────────────────────────────────────────
+Definir Rol Gerente;
+Definir Rol Cajero;
+Definir Rol Vendedor;
+
+Definir Usuario Ana;
+Definir Usuario Beto;
+Definir Usuario Carla;
+
+Definir Modulo Ventas;
+Definir Modulo Inventario;
+Definir Modulo Reportes;
+Definir Modulo Facturacion;
+
+// ─── 2. Asignación de Roles a Usuarios (RBAC) ─────────────────
+Usuario Ana   = Rol Gerente;
+Usuario Beto  = Rol Cajero;
+Usuario Carla = Rol Vendedor;
+
+// ─── 3. Políticas base por Rol ────────────────────────────────
+Rol Gerente  = Permitir Consultar Reportes;
+Rol Gerente  = Permitir Modificar Ventas;
+Rol Vendedor = Permitir Registrar Ventas;
+Rol Cajero   = Permitir Registrar Facturacion;
+
+// ─── 4. Reglas dinámicas ABAC ─────────────────────────────────
+// Acceso a Reportes solamente dentro del horario laboral (8 a 18).
+Si Horario < 18 Entonces {
+    Permitir Consultar Reportes;
+} Sino {
+    Denegar Consultar Reportes;
+}
+
+// Operaciones de alto monto requieren ser de tipo Gerente.
+Si MontoVenta > 1000 Entonces {
+    Validar Ventas;
+}
+
+// Bucle de monitoreo continuo
+Mientras Verdadero {
+    Si UbicacionIP == "192.168.0.1" Entonces {
+        Acceder Inventario;
+    }
+}
+
+// ─── 5. Manejo de errores ─────────────────────────────────────
+Intentar {
+    Acceder Reportes;
+    Mostrar "Operacion exitosa";
+} Atrapar ( Error e ) {
+    Denegar Consultar Reportes;
+    Mostrar "Acceso denegado por excepcion";
+}
+
+// ─── 6. Salida ────────────────────────────────────────────────
+Mostrar "Sistema de control de accesos operativo";
+Devolver Verdadero;

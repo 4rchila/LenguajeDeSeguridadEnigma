@@ -1,0 +1,12 @@
+// Ejemplo 15: Provoca ERR_SEM_07 (Conflicto de Políticas).
+// Regla 7 — Conflicto de Políticas de Seguridad:
+//   Un mismo Rol no puede tener "Permitir" y "Denegar" sobre el mismo
+//   par (Operación, Modulo) en el mismo flujo de control.
+
+Definir Rol Cajero;
+Definir Modulo Ventas;
+
+Rol Cajero = Permitir Modificar Ventas;
+
+// ↓↓↓ Falla: Cajero ya tiene "Permitir Modificar Ventas".
+Rol Cajero = Denegar Modificar Ventas;

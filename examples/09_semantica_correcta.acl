@@ -1,0 +1,28 @@
+// Ejemplo 9: Programa semánticamente correcto
+// Verifica las 7 reglas semánticas SIN provocar errores:
+//   Unicidad, Integridad Referencial, Compatibilidad de Tipos,
+//   Dominio Válido, Expresión Booleana, Operaciones Compatibles
+//   y Ausencia de Conflicto de Políticas.
+
+Definir Rol Gerente;
+Definir Rol Cajero;
+Definir Usuario Ana;
+Definir Usuario Beto;
+Definir Modulo Ventas;
+Definir Modulo Reportes;
+
+Usuario Ana = Rol Gerente;
+Usuario Beto = Rol Cajero;
+
+Rol Gerente = Permitir Consultar Reportes;
+Rol Gerente = Permitir Modificar Ventas;
+Rol Cajero = Permitir Registrar Ventas;
+
+Si Horario < 18 Entonces {
+    Permitir Consultar Reportes;
+} Sino {
+    Denegar Consultar Reportes;
+}
+
+Mostrar "Configuracion semantica valida";
+Devolver Verdadero;

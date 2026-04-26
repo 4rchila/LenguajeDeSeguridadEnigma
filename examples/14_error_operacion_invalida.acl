@@ -1,0 +1,12 @@
+// Ejemplo 14: Provoca ERR_SEM_06 (Operación Inválida entre Tipos).
+// Regla 6 — Operaciones entre Tipos:
+//   Los operadores relacionales <, >, <=, >= sólo aplican a tipos
+//   numéricos compatibles.
+
+Definir Modulo Ventas;
+
+// Horario es Tiempo (numérico), pero "tarde" es Cadena.
+// ↓↓↓ Comparación inválida: Tiempo vs Cadena.
+Si Horario > "tarde" Entonces {
+    Permitir Consultar Ventas;
+}

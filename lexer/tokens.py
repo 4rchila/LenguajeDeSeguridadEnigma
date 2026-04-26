@@ -61,7 +61,10 @@ PALABRAS_RESERVADAS = {
     "intentar", "atrapar", "error",
     
     # Tipos y Valores Lógicos
-    "cadena", "caracter", "horario", "verdadero", "falso",
+    # Nota: "horario" NO es palabra reservada. Según el documento de Diseño
+    # Semántico, Horario es una Variable_Entorno global ABAC inyectada por
+    # la Tabla de Símbolos en tiempo de análisis (Paso 0 — Inicialización).
+    "cadena", "caracter", "verdadero", "falso",
     
     # Operadores Lógicos (como palabras)
     "y", "o", "no",
