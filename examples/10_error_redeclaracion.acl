@@ -1,9 +1,0 @@
-// Ejemplo 10: Provoca ERR_SEM_01 (Redeclaración).
-// Regla 1 — Unicidad de Entidades:
-//   Un identificador no puede ser declarado dos veces en el mismo scope.
-
-Definir Rol Gerente;
-Definir Modulo Ventas;
-
-// ↓↓↓ Aquí salta el error: Gerente ya existe como Rol
-Definir Usuario Gerente;

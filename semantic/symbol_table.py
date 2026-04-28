@@ -130,6 +130,12 @@ class SymbolTable:
     def existe(self, nombre: str) -> bool:
         return nombre is not None and nombre.lower() in self._tabla
 
+    def eliminar(self, nombre: str) -> None:
+        """Elimina un símbolo de la tabla si existe. Útil para variables temporales
+        como el error_id de los bloques Intentar/Atrapar."""
+        if nombre:
+            self._tabla.pop(nombre.lower(), None)
+
     def actualizar_rol_vinculado(self, usuario: str, rol: str) -> None:
         sym = self.buscar(usuario)
         if sym:

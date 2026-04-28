@@ -1,22 +1,25 @@
 """
 controller.py — Mediador entre la GUI y los analizadores.
 =========================================================
-Coordina las tres fases del compilador:
+Coordina las cuatro fases del compilador:
 
-    Fase 1 (Léxico)  →  lexer/lexer.py
-    Fase 2 (Sintáctico) →  parser/parser.py
-    Fase 3 (Semántico)  →  semantic/semantic_analyzer.py
+    Fase 1 (Léxico)      →  lexer/lexer.py
+    Fase 2 (Sintáctico)  →  parser/parser.py
+    Fase 3 (Semántico)   →  semantic/semantic_analyzer.py
+    Fase 4 (Generación)  →  codegen/policy_exporter.py
 
 Modos disponibles:
     • Modo Rápido (Ctrl+Enter)  →  ejecuta todo y enfoca la pestaña relevante.
     • Modo Didáctico (F10)      →  animación paso-a-paso con resaltado.
     • Live Compile (debounced)  →  pipeline silencioso al editar el código,
       mantiene tokens, AST, tabla de símbolos y errores siempre frescos.
+    • Exportar JSON (Ctrl+E)   →  genera archivo .json con políticas compiladas.
 """
 
 from enum import Enum
 
 from PyQt6.QtCore import QTimer
+from PyQt6.QtWidgets import QFileDialog
 
 from gui.main_window import MainWindow
 from gui.icons import Icons
@@ -24,6 +27,7 @@ from lexer.lexer import Lexer
 from lexer.tokens import TipoToken
 from parser.parser import Parser
 from semantic import SemanticAnalyzer
+from codegen.policy_exporter import PolicyExporter
 
 
 # ─────────────────────────────────────────────────────────────────────
@@ -43,11 +47,10 @@ class AnimationPhase(Enum):
     SEMANTIC = 3
 
 
-# Índices de pestaña en el QTabWidget de resultados
+# Índices de pestaña en el QTabWidget de resultados (sin "AST Texto")
 TAB_TOKENS = 0
-TAB_AST_TEXTO = 1
-TAB_AST_GRAFICO = 2
-TAB_TABLA_SIMBOLOS = 3
+TAB_AST_GRAFICO = 1
+TAB_TABLA_SIMBOLOS = 2
 
 
 # ─────────────────────────────────────────────────────────────────────
@@ -82,6 +85,11 @@ class Controller:
         self.syntax_ast = None
         self.syntax_parser_errors = []
 
+        # Estado de exportación (Fase 4)
+        self._last_valid_ast = None
+        self._last_valid_tabla = None
+        self._source_file = ""
+
         self._connect_signals()
 
     # ─────────────────────────────────────────────────────────────
@@ -94,6 +102,7 @@ class Controller:
         self.window.action_pause.triggered.connect(self.on_pause_toggle)
         self.window.action_stop.triggered.connect(self.on_stop_didactic)
         self.window.action_clear.triggered.connect(self.on_clear)
+        self.window.action_export.triggered.connect(self.on_export)
         self.window.error_panel.navigate_to_line.connect(self.window.navigate_to_line)
         self.window.code_editor.textChanged.connect(self._on_text_changed)
 
@@ -107,9 +116,11 @@ class Controller:
         self.window.lbl_analyzer.setText("Estado: Esperando…")
         self.window.statusBar().clearMessage()
         self.window._on_clear()
-        self.window.ast_viewer.clear_tree()
         self.window.ast_graph.clear_graph()
         self.window.symbol_table_widget.clear_table()
+        self._last_valid_ast = None
+        self._last_valid_tabla = None
+        self.window.action_export.setEnabled(False)
 
     def on_analyze(self):
         """Ejecuta el pipeline completo y enfoca la pestaña relevante."""
@@ -149,6 +160,45 @@ class Controller:
                 "Análisis abortado en la fase semántica.", 9000,
             )
 
+    def on_export(self):
+        """Fase 4 — Exportar las políticas compiladas a un archivo JSON."""
+        if self._last_valid_ast is None or self._last_valid_tabla is None:
+            self.window.statusBar().showMessage(
+                "No hay políticas compiladas para exportar. Analiza primero.", 4000
+            )
+            return
+
+        path, _ = QFileDialog.getSaveFileName(
+            self.window,
+            "Exportar Políticas Compiladas",
+            "politicas_enigma.json",
+            "Archivos JSON (*.json);;Todos (*)",
+        )
+        if not path:
+            return
+
+        try:
+            exporter = PolicyExporter(
+                arbol=self._last_valid_ast,
+                tabla=self._last_valid_tabla,
+                source_file=self._source_file,
+            )
+            json_content = exporter.exportar_json(indent=2)
+
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(json_content)
+
+            self.window.statusBar().showMessage(
+                f"Políticas exportadas exitosamente → {path}", 6000
+            )
+            self.window.lbl_analyzer.setText(
+                "Estado: Exportación Completa — Fase 4 (JSON)"
+            )
+        except Exception as exc:
+            self.window.statusBar().showMessage(
+                f"Error al exportar: {exc}", 6000
+            )
+
     def on_stop_didactic(self):
         if self.anim_state != AnimationState.INACTIVE:
             self._stop_animation(finished=True)
@@ -173,7 +223,6 @@ class Controller:
 
             self.window.token_table.clear_table()
             self.window.error_panel.clear_panel()
-            self.window.ast_viewer.clear_tree()
             self.window.ast_graph.clear_graph()
             self.window.symbol_table_widget.clear_table()
             self.window.lbl_tokens.setText("Tokens: 0")
@@ -192,6 +241,9 @@ class Controller:
             self.window.action_pause.setText("Pausa")
             self.window.action_stop.setVisible(True)
             self.window.statusBar().clearMessage()
+
+            # Siempre iniciar mostrando la pestaña de Tokens
+            self.window.resultado_tabs.setCurrentIndex(TAB_TOKENS)
 
             self.anim_timer.start(self.anim_delay)
         except Exception as exc:
@@ -248,7 +300,6 @@ class Controller:
             self.window.error_panel.populate(lex_errors)
             self.window.lbl_errors.setText(f"Errores: {len(lex_errors)}")
             self.window.show_error_panel()
-            self.window.ast_viewer.clear_tree()
             self.window.ast_graph.clear_graph()
             self.window.symbol_table_widget.clear_table()
             self.window.lbl_analyzer.setText(
@@ -266,7 +317,6 @@ class Controller:
             self.window.error_panel.populate(parser.errores)
             self.window.lbl_errors.setText(f"Errores: {len(parser.errores)}")
             self.window.show_error_panel()
-            self.window.ast_viewer.clear_tree()
             self.window.ast_graph.clear_graph()
             self.window.symbol_table_widget.clear_table()
             self.window.lbl_analyzer.setText(
@@ -277,7 +327,6 @@ class Controller:
             return False, "sintactico"
 
         # AST sintácticamente válido — pintarlo siempre.
-        self.window.ast_viewer.populate_from_ast(arbol)
         self.window.ast_graph.set_ast(arbol)
 
         # ── Fase 3: Semántico ──────────────────────────────────
@@ -298,15 +347,21 @@ class Controller:
             )
             if focus_tabs:
                 self.window.resultado_tabs.setCurrentIndex(TAB_TABLA_SIMBOLOS)
+            self._last_valid_ast = None
+            self._last_valid_tabla = None
+            self.window.action_export.setEnabled(False)
             return False, "semantico"
 
-        # Pipeline OK
+        # Pipeline OK — habilitar exportación (Fase 4)
         self.window.error_panel.clear_panel()
         self.window.lbl_errors.setText("Errores: 0")
         self.window.hide_error_panel()
         self.window.lbl_analyzer.setText(
             "Estado: Análisis Completo — Léxico · Sintáctico · Semántico"
         )
+        self._last_valid_ast = arbol
+        self._last_valid_tabla = analizador.tabla
+        self.window.action_export.setEnabled(True)
         if focus_tabs:
             self.window.resultado_tabs.setCurrentIndex(TAB_TABLA_SIMBOLOS)
         return True, None
@@ -336,7 +391,6 @@ class Controller:
         if not code.strip():
             self.window.code_editor.set_lexical_errors([])
             self.window.token_table.clear_table()
-            self.window.ast_viewer.clear_tree()
             self.window.ast_graph.clear_graph()
             self.window.symbol_table_widget.clear_table()
             self.window.error_panel.clear_panel()
@@ -421,8 +475,8 @@ class Controller:
         self.anim_phase = AnimationPhase.SYNTAX
         self.window.lbl_analyzer.setText("Estado: Modo Didáctico — Analizador Sintáctico")
         self.window.ast_graph.prepare_animation(self.syntax_ast)
+        # Auto-cambiar a la pestaña del Árbol Sintáctico
         self.window.resultado_tabs.setCurrentIndex(TAB_AST_GRAFICO)
-        self.window.ast_viewer.populate_from_ast(self.syntax_ast)
 
     def _syntax_step(self):
         ast_node = self.window.ast_graph.animate_next_node()
@@ -453,6 +507,9 @@ class Controller:
     def _on_syntax_finished(self):
         """Animación sintáctica terminada → disparar Fase 3."""
         self.window.code_editor.set_didactic_highlight(-1, -1)
+
+        # Auto-cambiar a la pestaña de Tabla de Símbolos para la fase semántica
+        self.window.resultado_tabs.setCurrentIndex(TAB_TABLA_SIMBOLOS)
 
         analizador = SemanticAnalyzer()
         ok = analizador.analizar(self.syntax_ast)
@@ -514,7 +571,6 @@ class Controller:
                     self.window.lbl_analyzer.setText("Estado: Error Sintáctico Detectado")
                     self.window.symbol_table_widget.clear_table()
                 else:
-                    self.window.ast_viewer.populate_from_ast(self.syntax_ast)
                     self.window.ast_graph.set_ast(self.syntax_ast)
 
                     analizador = SemanticAnalyzer()

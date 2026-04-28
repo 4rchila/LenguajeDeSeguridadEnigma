@@ -59,6 +59,9 @@ class Lexer:
         ('NEWLINE',    r'\n'),
 
         # 2. Literales (cadenas NO pueden contener salto de línea — Caso 8)
+        # NOTA: NUMERO_MAL debe ir ANTES de NUMERO_DEC para que la regex
+        # capture "15.5.2" completo en lugar de solo "15.5".
+        ('NUMERO_MAL', r'[0-9]+(?:\.[0-9]+){2,}'),  # Error Léxico 03 - Ej: 15.5.2
         ('NUMERO_DEC', r'[0-9]+\.[0-9]+'),   # Ej: 15.5
         ('ID_MAL_NUMERO', r'[0-9]+[a-zA-Z][a-zA-Z0-9_]*'),  # 123Gerente — Error (antes que NUMERO_ENT)
         ('NUMERO_ENT', r'[0-9]+'),           # Ej: 1, 10
@@ -83,10 +86,7 @@ class Lexer:
         ('BACKSLASH', r'\\'),
         ('NEGACION_SOLA', r'!'), 
 
-        # 7. Reglas para identificar errores comunes
-        # Error Léxico 03 - Números mal formados (ej. 15.5.2)
-        ('NUMERO_MAL', r'[0-9]+(?:\.[0-9]+){2,}'),
-        
+        # 7. Catch-all para errores
         # Error Léxico 01 - Cualquier otro carácter no reconocido (match 1 carácter)
         ('ERROR', r'.'), 
     ]

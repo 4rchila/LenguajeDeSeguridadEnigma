@@ -406,20 +406,65 @@ class Parser:
         
     def parse_condicion(self) -> ast.ASTNode:
         """
-        Toma una base binaria o unitaria para condicionantes.  
-        Ej. "Ventas > 100", o simplemente un flag local "Verdadero".
+        Parseo de condiciones con precedencia de operadores lógicos.
+        
+        Precedencia (de menor a mayor):
+            O  → disyunción lógica
+            Y  → conjunción lógica
+            No → negación unaria
+            Relacionales (==, !=, <, >, <=, >=) → comparación
+        
+        <condicion>     ::= <cond_or>
+        <cond_or>       ::= <cond_and> ("O" <cond_and>)*
+        <cond_and>      ::= <cond_unaria> ("Y" <cond_unaria>)*
+        <cond_unaria>   ::= "No" <cond_unaria> | <cond_comparacion>
+        <cond_comparacion> ::= <valor> (op_relacional <valor>)?
         """
+        return self._parse_cond_or()
+
+    def _parse_cond_or(self) -> ast.ASTNode:
+        """<cond_or> ::= <cond_and> ("O" <cond_and>)*"""
+        izq = self._parse_cond_and()
+        while self.is_match_valor("O"):
+            t_op = self.get_current_token()
+            self.advance()
+            der = self._parse_cond_and()
+            izq = ast.CondicionLogicaNode(izq, t_op.lexema, der, izq.start_token, der.end_token)
+        return izq
+
+    def _parse_cond_and(self) -> ast.ASTNode:
+        """<cond_and> ::= <cond_unaria> ("Y" <cond_unaria>)*"""
+        izq = self._parse_cond_unaria()
+        while self.is_match_valor("Y"):
+            t_op = self.get_current_token()
+            self.advance()
+            der = self._parse_cond_unaria()
+            izq = ast.CondicionLogicaNode(izq, t_op.lexema, der, izq.start_token, der.end_token)
+        return izq
+
+    def _parse_cond_unaria(self) -> ast.ASTNode:
+        """<cond_unaria> ::= "No" <cond_unaria> | <cond_comparacion>"""
+        if self.is_match_valor("No"):
+            t_op = self.get_current_token()
+            self.advance()
+            expr = self._parse_cond_unaria()
+            return ast.CondicionUnariaNode(t_op.lexema, expr, t_op, expr.end_token)
+        return self._parse_cond_comparacion()
+
+    def _parse_cond_comparacion(self) -> ast.ASTNode:
+        """<cond_comparacion> ::= <valor> (op_relacional <valor>)?"""
         v_izq = self.parse_valor()
         t_op = self.get_current_token()
-        
-        ops_relacionales = ["==", "!=", "<", ">", "<=", ">=", "=>", "=<", "=", "y", "o"]
-        
+
+        # Solo operadores relacionales; Y/O/No se manejan en niveles superiores.
+        ops_relacionales = ["==", "!=", "<", ">", "<=", ">=", "=>", "=<", "="]
+
         if t_op and t_op.lexema.lower() in ops_relacionales:
             self.advance()
             v_der = self.parse_valor()
             return ast.CondicionBinariaNode(v_izq, t_op.lexema, v_der, v_izq.start_token, v_der.end_token)
-            
-        return v_izq # Si no hay operador, expurga expresión regular o identificador puro
+
+        return v_izq  # Expresión simple: identificador o literal booleano
         
     def parse_valor(self) -> ast.ASTNode:
         """<valor> ::= <id> | <valor_literal>"""

@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ENIGMA | Demo ERP Integración Segura</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0A0E17;
+            --panel: rgba(15, 20, 35, 0.75);
+            --text: #e2e8f0;
+            --muted: #94a3b8;
+            --cyan: #0ea5e9;
+            --purple: #b700ff;
+            --red: #fb7185;
+            --green: #34d399;
+            --glass: rgba(14, 165, 233, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.08);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        #particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            z-index: 10;
+            animation: fadeInDown 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .logo-container {
+            margin-bottom: 1.5rem;
+            filter: drop-shadow(0 0 20px rgba(14, 165, 233, 0.3));
+            animation: float 4s ease-in-out infinite;
+        }
+
+        h1 { 
+            font-size: 3rem; 
+            font-weight: 900; 
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, var(--cyan), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle { 
+            color: var(--muted); 
+            font-size: 1.1rem;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+
+        #status-badge {
+            display: inline-block;
+            padding: 0.5rem 1.5rem;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            background: rgba(14, 165, 233, 0.1);
+            border: 1px solid var(--cyan);
+            color: var(--cyan);
+            margin-top: 1.5rem;
+            box-shadow: 0 0 15px rgba(14, 165, 233, 0.2);
+            transition: all 0.5s ease;
+        }
+
+        .glass-panel {
+            background: var(--panel);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 3rem;
+            width: 100%;
+            max-width: 900px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6);
+            margin-bottom: 3rem;
+            z-index: 5;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s;
+        }
+
+        .uploader-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+            border: 2px dashed rgba(14, 165, 233, 0.3);
+            padding: 3rem;
+            border-radius: 20px;
+            background: rgba(14, 165, 233, 0.03);
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .uploader-area:hover { 
+            background: rgba(14, 165, 233, 0.07); 
+            border-color: var(--cyan);
+            transform: scale(1.01);
+            box-shadow: 0 0 30px rgba(14, 165, 233, 0.1);
+        }
+        .uploader-area svg {
+            color: var(--cyan);
+            filter: drop-shadow(0 0 10px rgba(14, 165, 233, 0.5));
+        }
+        .uploader-area h2 { font-size: 1.5rem; font-weight: 700; }
+        .uploader-area input { display: none; }
+
+        .login-section {
+            display: none;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-top: 2.5rem;
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .login-section h3 {
+            font-size: 1.2rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-align: center;
+        }
+        select {
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            background: rgba(10, 14, 23, 0.8);
+            color: white;
+            border: 1px solid var(--glass-border);
+            font-size: 1.1rem;
+            font-family: 'Outfit', sans-serif;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%230ea5e9' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1.5rem center;
+        }
+        select:focus { 
+            border-color: var(--cyan);
+            box-shadow: 0 0 20px rgba(14, 165, 233, 0.2);
+        }
+
+        .dashboard {
+            display: none;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            width: 100%;
+            max-width: 1100px;
+            z-index: 5;
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .module-card {
+            background: var(--panel);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.4s, border-color 0.4s, box-shadow 0.4s;
+        }
+        
+        .module-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(14, 165, 233, 0.3);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .module-card::before {
+            content: ''; 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 4px;
+            background: linear-gradient(90deg, var(--cyan), var(--purple));
+        }
+
+        .module-title { 
+            font-size: 1.4rem; 
+            font-weight: 800; 
+            text-transform: capitalize; 
+            color: #fff; 
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+        .module-title::before {
+            content: '◈';
+            color: var(--cyan);
+            font-size: 1.2rem;
+        }
+
+        .action-btn {
+            padding: 1rem 1.25rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.05);
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--muted);
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: lowercase;
+        }
+
+        .action-btn.allow {
+            background: rgba(52, 211, 153, 0.05);
+            color: var(--green);
+            border: 1px solid rgba(52, 211, 153, 0.2);
+        }
+        .action-btn.allow:hover { 
+            background: rgba(52, 211, 153, 0.15); 
+            transform: translateX(6px);
+            box-shadow: 0 0 20px rgba(52, 211, 153, 0.1);
+            border-color: var(--green);
+        }
+
+        .action-btn.deny {
+            background: rgba(251, 113, 133, 0.03);
+            color: #64748b;
+            border: 1px solid rgba(251, 113, 133, 0.1);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        .action-btn.deny:hover {
+            background: rgba(251, 113, 133, 0.08);
+            color: var(--red);
+            border-color: var(--red);
+        }
+
+        .btn-icon {
+            font-size: 1.1rem;
+            transition: transform 0.3s;
+        }
+        .action-btn.allow:hover .btn-icon { transform: scale(1.2) rotate(10deg); }
+
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: #1a1f30; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--cyan); }
+    </style>
+</head>
+<body>
+
+    <canvas id="particles"></canvas>
+
+    <header>
+        <div class="logo-container">
+            <svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="url(#gradient)" stroke-width="1.5"><defs><linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#0ea5e9"/><stop offset="100%" stop-color="#b700ff"/></linearGradient></defs><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        </div>
+        <h1>Tech-Store ERP</h1>
+        <p class="subtitle">Plataforma de Integración de Middleware Seguro</p>
+        <div id="status-badge">ESPERANDO POLÍTICAS...</div>
+    </header>
+
+    <div class="glass-panel" id="setup-panel">
+        <label class="uploader-area" for="jsonInput">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            <h2>Cargar politicas_enigma.json</h2>
+            <p style="color: var(--muted); font-size: 0.9rem;">Sube el archivo compilado para activar el motor de seguridad.</p>
+            <input type="file" id="jsonInput" accept=".json">
+        </label>
+
+        <div class="login-section" id="login-section">
+            <h3>Autenticación Requerida</h3>
+            <select id="userSelect">
+                <option value="">Selecciona una identidad corporativa...</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="dashboard" id="dashboard">
+    </div>
+
+    <script>
+        let globalPolicies = null;
+        let currentUserRole = null;
+
+        const fileInput = document.getElementById('jsonInput');
+        const userSelect = document.getElementById('userSelect');
+        const dashboard = document.getElementById('dashboard');
+        const statusBadge = document.getElementById('status-badge');
+        const loginSection = document.getElementById('login-section');
+
+        const operacionesPosibles = ["consultar", "registrar", "modificar", "eliminar", "insertar"];
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    globalPolicies = JSON.parse(event.target.result);
+                    statusBadge.textContent = "CORE ENIGMA: POLÍTICAS ACTIVAS";
+                    statusBadge.style.background = "rgba(52, 211, 153, 0.1)";
+                    statusBadge.style.borderColor = "var(--green)";
+                    statusBadge.style.color = "var(--green)";
+                    statusBadge.style.boxShadow = "0 0 20px rgba(52, 211, 153, 0.3)";
+                    
+                    document.getElementById('setup-panel').style.borderColor = "rgba(52, 211, 153, 0.2)";
+                    
+                    setupLogin();
+                } catch (err) {
+                    alert("Error leyendo el JSON: " + err.message);
+                }
+            };
+            reader.readAsText(file);
+        });
+
+        function setupLogin() {
+            loginSection.style.display = 'flex';
+            userSelect.innerHTML = '<option value="">Selecciona una identidad corporativa...</option>';
+            
+            globalPolicies.policies.user_assignments.forEach(assignment => {
+                const option = document.createElement('option');
+                option.value = assignment.role;
+                option.textContent = `${assignment.user.toUpperCase()} — Rol: ${assignment.role}`;
+                userSelect.appendChild(option);
+            });
+        }
+
+        userSelect.addEventListener('change', (e) => {
+            currentUserRole = e.target.value;
+            if (currentUserRole) {
+                renderDashboard();
+                statusBadge.textContent = `IDENTIDAD VERIFICADA: ${currentUserRole.toUpperCase()}`;
+            } else {
+                dashboard.style.display = 'none';
+                statusBadge.textContent = "CORE ENIGMA: POLÍTICAS ACTIVAS";
+            }
+        });
+
+        function renderDashboard() {
+            dashboard.innerHTML = '';
+            dashboard.style.display = 'grid';
+
+            const roleMatrix = globalPolicies.access_matrix[currentUserRole] || {};
+            const modules = globalPolicies.entities.modules.map(m => m.id);
+
+            modules.forEach(modulo => {
+                const card = document.createElement('div');
+                card.className = 'module-card';
+                card.innerHTML = `<div class="module-title">${modulo}</div>`;
+
+                const reglasModulo = roleMatrix[modulo] || [];
+
+                operacionesPosibles.forEach(op => {
+                    const btn = document.createElement('button');
+                    btn.className = 'action-btn';
+                    
+                    const isPermitted = reglasModulo.includes(`permitir ${op}`);
+
+                    if (isPermitted) {
+                        btn.classList.add('allow');
+                        btn.innerHTML = `<span>${op}</span> <span class="btn-icon">✓</span>`;
+                        btn.onclick = () => {
+                            mostrarConsolaServidor(modulo, op, "ALLOW", currentUserRole);
+                            alert(`✅ MIDDLEWARE DE SEGURIDAD ENIGMA\n\nAcceso CONCEDIDO para '${op}' en '${modulo}'.\nPolíticas de seguridad validadas en tiempo real.`);
+                        };
+                    } else {
+                        btn.classList.add('deny');
+                        btn.innerHTML = `<span>${op}</span> <span class="btn-icon">🔒</span>`;
+                        btn.onclick = () => {
+                            mostrarConsolaServidor(modulo, op, "DENY", currentUserRole);
+                            alert(`❌ BLOQUEO DE SEGURIDAD ENIGMA\n\nAcceso DENEGADO para '${op}' en '${modulo}'.\nTu rol ('${currentUserRole}') no posee privilegios suficientes.`);
+                        };
+                    }
+
+                    card.appendChild(btn);
+                });
+
+                dashboard.appendChild(card);
+            });
+        }
+
+        function mostrarConsolaServidor(modulo, operacion, result, rol) {
+            const time = new Date().toLocaleTimeString();
+            if (result === "ALLOW") {
+                console.log(`%c[${time}] SEGURIDAD ENIGMA: PERMITIDO %c${rol} %c-> ${operacion} en ${modulo}`, 'color: #34d399; font-weight: bold', 'color: #0ea5e9', 'color: #e2e8f0');
+            } else {
+                console.log(`%c[${time}] SEGURIDAD ENIGMA: DENEGADO %c${rol} %c-> ${operacion} en ${modulo}`, 'color: #fb7185; font-weight: bold', 'color: #b700ff', 'color: #e2e8f0');
+            }
+        }
+
+        (function(){
+            const c=document.getElementById('particles'),ctx=c.getContext('2d');
+            let w,h,particles=[];
+            function resize(){w=c.width=window.innerWidth;h=c.height=window.innerHeight}
+            window.addEventListener('resize',resize);resize();
+            class P{
+                constructor(){this.reset()}
+                reset(){
+                    this.x=Math.random()*w;this.y=Math.random()*h;
+                    this.vx=(Math.random()-.5)*.4;this.vy=(Math.random()-.5)*.4;
+                    this.r=Math.random()*1.2+.5;
+                    this.a=Math.random()*.3+.1;
+                    this.color=Math.random()>.5?'14,165,233':'183,0,255';
+                }
+                update(){
+                    this.x+=this.vx;this.y+=this.vy;
+                    if(this.x<0||this.x>w||this.y<0||this.y>h)this.reset();
+                }
+                draw(){
+                    ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
+                    ctx.fillStyle=`rgba(${this.color},${this.a})`;ctx.fill();
+                }
+            }
+            for(let i=0;i<60;i++)particles.push(new P());
+            function loop(){
+                ctx.clearRect(0,0,w,h);
+                particles.forEach(p=>{p.update();p.draw()});
+                for(let i=0;i<particles.length;i++){
+                    for(let j=i+1;j<particles.length;j++){
+                        const dx=particles[i].x-particles[j].x,dy=particles[i].y-particles[j].y;
+                        const d=Math.sqrt(dx*dx+dy*dy);
+                        if(d<130){
+                            ctx.beginPath();ctx.moveTo(particles[i].x,particles[i].y);
+                            ctx.lineTo(particles[j].x,particles[j].y);
+                            ctx.strokeStyle=`rgba(14,165,233,${.06*(1-d/130)})`;
+                            ctx.lineWidth=.5;ctx.stroke();
+                        }
+                    }
+                }
+                requestAnimationFrame(loop);
+            }
+            loop();
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+// ══════════════════════════════════════════════════════════════════════
+// CASO REAL: EMPRESA DE VENTAS "TECH-STORE"
+// ══════════════════════════════════════════════════════════════════════
+
+// 1. Definición de la estructura de la empresa
+Definir Rol Gerente;
+Definir Rol Cajero;
+Definir Rol Vendedor;
+
+Definir Modulo Ventas;
+Definir Modulo Inventario;
+Definir Modulo Reportes;
+
+Definir Usuario Ana;    // Será Gerente
+Definir Usuario Beto;   // Será Cajero
+Definir Usuario Carlos; // Será Vendedor
+
+// 2. Asignación de Usuarios a sus Roles
+Usuario Ana = Rol Gerente;
+Usuario Beto = Rol Cajero;
+Usuario Carlos = Rol Vendedor;
+
+// 3. Políticas del Vendedor
+// Un vendedor solo debería registrar ventas y consultar el inventario.
+Rol Vendedor = Permitir Registrar Ventas;
+Rol Vendedor = Permitir Consultar Inventario;
+Rol Vendedor = Denegar Modificar Inventario;
+Rol Vendedor = Denegar Consultar Reportes;
+
+// 4. Políticas del Cajero
+// Un cajero puede facturar y cobrar (modificar ventas).
+Rol Cajero = Permitir Consultar Ventas;
+Rol Cajero = Permitir Modificar Ventas;
+Rol Cajero = Denegar Consultar Reportes;
+Rol Cajero = Denegar Modificar Inventario;
+
+// 5. Políticas del Gerente
+// Un gerente puede consultar reportes financieros y modificar precios del inventario.
+Rol Gerente = Permitir Consultar Reportes;
+Rol Gerente = Permitir Modificar Inventario;
+Rol Gerente = Permitir Consultar Ventas;
+Rol Gerente = Permitir Eliminar Ventas;

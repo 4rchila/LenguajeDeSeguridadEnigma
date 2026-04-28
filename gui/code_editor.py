@@ -45,8 +45,8 @@ class SyntaxHighlighter(QSyntaxHighlighter):
         return fmt
 
     def _build_rules(self):
-        # Palabras reservadas — azul medio
-        kw_fmt = self._fmt("#60a5fa", bold=True)
+        # Palabras reservadas — azul claro (match con el logo)
+        kw_fmt = self._fmt("#0ea5e9", bold=True)
         for word in self.PALABRAS_RESERVADAS:
             pattern = QRegularExpression(rf"\b{word}\b")
             self._rules.append((pattern, kw_fmt))
@@ -111,12 +111,12 @@ class LineNumberArea(QWidget):
 class CodeEditor(QPlainTextEdit):
 
     # Colores del editor
-    BG_COLOR        = QColor("#0d1117")
-    LINE_HL_COLOR   = QColor("#1a2035")
-    GUTTER_BG       = QColor("#111827")
+    BG_COLOR        = QColor("#080B13")
+    LINE_HL_COLOR   = QColor("#121826")
+    GUTTER_BG       = QColor("#080B13")
     GUTTER_FG       = QColor("#374151")
-    GUTTER_FG_CURR  = QColor("#6366f1")
-    GUTTER_BORDER   = QColor("#1e2235")
+    GUTTER_FG_CURR  = QColor("#0ea5e9")
+    GUTTER_BORDER   = QColor("#161c2d")
     ERROR_UNDERLINE = QColor("#f87171")
 
     def __init__(self, parent=None):
@@ -175,10 +175,10 @@ class CodeEditor(QPlainTextEdit):
         )
         self.setStyleSheet("""
             QPlainTextEdit {
-                background-color: #0d1117;
+                background-color: #080B13;
                 color: #e2e8f0;
                 border: none;
-                border-radius: 0;
+                border-radius: 12px;
                 selection-background-color: #3b5bdb;
                 selection-color: #ffffff;
                 padding: 4px 6px;

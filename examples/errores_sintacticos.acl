@@ -1,0 +1,83 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// CATÁLOGO COMPLETO DE ERRORES SINTÁCTICOS — Lenguaje Enigma
+// ═══════════════════════════════════════════════════════════════════════════════
+// Este archivo es LÉXICAMENTE LIMPIO (todos los tokens son válidos) pero
+// contiene RUPTURAS DE GRAMÁTICA que el Parser detectará.
+// El Analizador Sintáctico usa "Modo Pánico" (sincronización sobre ';' y '}')
+// para recuperarse de cada error y seguir encontrando los demás.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+
+// ─── ERROR SINT. 1: Falta de Terminador ';' ────────────────────────────────
+// Toda sentencia simple debe terminar con punto y coma.
+
+Definir Rol Asistente
+
+
+// ─── ERROR SINT. 2: Tipo de Dato Incorrecto donde se espera Identificador ──
+// Después de "Definir Rol" se espera un identificador, no un literal cadena.
+
+Definir Usuario "Empleado101";
+
+
+// ─── ERROR SINT. 3: Falta Llave de Cierre '}' en Bloque Condicional ────────
+// Un bloque abierto con '{' que nunca se cierra.
+
+Si Verdadero Entonces {
+    Permitir Consultar Inventario;
+
+
+// ─── ERROR SINT. 4: Palabra Clave Desconocida al Inicio de Instrucción ─────
+// "Asignar" no es una instrucción reconocida por la gramática.
+
+Asignar Rol Auditor;
+
+
+// ─── ERROR SINT. 5: Falta 'Terminar;' en un Bloque 'Caso' ─────────────────
+// Cada caso dentro de un Elegir debe finalizar con "Terminar;".
+
+Elegir ( Auditor ) {
+    Caso "Principal" : { Permitir Consultar Reportes; }
+}
+
+
+// ─── ERROR SINT. 6: Doble Acción de Seguridad Consecutiva ──────────────────
+// "Denegar Permitir" no es válido; solo se espera UNA acción seguida de
+// una operación y módulo.
+
+Denegar Permitir Reportes;
+
+
+// ─── ERROR SINT. 7: Expresión Malformada dentro de Condición ────────────────
+// "Verdadero Verdadero" son dos valores consecutivos sin operador entre ellos.
+// El parser espera "Entonces" después de la condición.
+
+Si Verdadero Verdadero Entonces {
+    Acceder Ventas;
+}
+
+
+// ─── ERROR SINT. 8: Falta 'Entonces' después de Condición ──────────────────
+// La estructura Si requiere la palabra clave "Entonces" después de la condición.
+
+Si Verdadero {
+    Acceder Ventas;
+}
+
+
+// ─── ERROR SINT. 9: Falta Paréntesis en Elegir ─────────────────────────────
+// La estructura Elegir requiere paréntesis alrededor del identificador.
+
+Elegir Gerente {
+    Caso "Activo" : { Acceder Ventas; } Terminar;
+}
+
+
+// ─── ERROR SINT. 10: Falta 'Error' en Atrapar ──────────────────────────────
+// La estructura Atrapar requiere la sintaxis "Atrapar ( Error <id> )".
+
+Intentar {
+    Acceder Ventas;
+} Atrapar ( e ) {
+    Denegar Ventas;
+}

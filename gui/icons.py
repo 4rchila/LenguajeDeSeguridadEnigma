@@ -101,6 +101,12 @@ def _draw_step(p: QPainter, s: int):
         p.drawRoundedRect(r, 1.4, 1.4)
 
 
+def _draw_minimize(p: QPainter, s: int):
+    p.drawLine(QPointF(s * 0.2, s * 0.8), QPointF(s * 0.8, s * 0.8))
+
+def _draw_maximize(p: QPainter, s: int):
+    p.drawRect(QRectF(s * 0.2, s * 0.2, s * 0.6, s * 0.6))
+
 def _draw_pause(p: QPainter, s: int):
     p.setBrush(QBrush(p.pen().color()))
     p.drawRoundedRect(QRectF(s * 0.30, s * 0.20, s * 0.13, s * 0.60), 1.5, 1.5)
@@ -295,6 +301,21 @@ def _draw_zap(p: QPainter, s: int):
     p.drawPath(path)
 
 
+def _draw_download(p: QPainter, s: int):
+    """Flecha abajo con bandeja — exportar / descargar."""
+    # Flecha abajo
+    p.drawLine(QPointF(s * 0.50, s * 0.16), QPointF(s * 0.50, s * 0.58))
+    p.drawLine(QPointF(s * 0.34, s * 0.44), QPointF(s * 0.50, s * 0.58))
+    p.drawLine(QPointF(s * 0.66, s * 0.44), QPointF(s * 0.50, s * 0.58))
+    # Bandeja
+    path = QPainterPath()
+    path.moveTo(s * 0.18, s * 0.62)
+    path.lineTo(s * 0.18, s * 0.82)
+    path.lineTo(s * 0.82, s * 0.82)
+    path.lineTo(s * 0.82, s * 0.62)
+    p.drawPath(path)
+
+
 # ─────────────────────────────────────────────────────────────────────
 # Fachada pública
 # ─────────────────────────────────────────────────────────────────────
@@ -369,6 +390,18 @@ class Icons:
     @staticmethod
     def eye(color: str = "#a78bfa", size: int = _DEFAULT_SIZE) -> QIcon:
         return _build_icon(_draw_eye, color, size)
+
+    @staticmethod
+    def download(color: str = "#22c55e", size: int = _DEFAULT_SIZE) -> QIcon:
+        return _build_icon(_draw_download, color, size)
+
+    @staticmethod
+    def minimize(color: str = "#94a3b8", size: int = _DEFAULT_SIZE) -> QIcon:
+        return _build_icon(_draw_minimize, color, size)
+
+    @staticmethod
+    def maximize(color: str = "#94a3b8", size: int = _DEFAULT_SIZE) -> QIcon:
+        return _build_icon(_draw_maximize, color, size)
 
     # ─────── Pixmap helpers (para QLabels e items dentro de QListWidget) ───────
 

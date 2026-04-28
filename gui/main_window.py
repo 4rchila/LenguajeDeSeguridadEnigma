@@ -8,7 +8,6 @@ from PyQt6.QtGui import QIcon, QFont, QAction, QPixmap
 
 from gui.code_editor import CodeEditor
 from gui.token_table import TokenTable, ErrorPanel
-from gui.ast_tree_viewer import AstTreeViewer
 from gui.ast_graph_widget import AstGraphWidget
 from gui.symbol_table_widget import SymbolTableWidget
 from gui.icons import Icons
@@ -19,9 +18,10 @@ class MainWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Compilador — Control de Accesos Empresarial")
+        self.setWindowTitle("ENIGMA")
         self.setMinimumSize(1100, 700)
         self.resize(1300, 800)
+        self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
 
         self._build_ui()
         self._build_toolbar()
@@ -45,7 +45,7 @@ class MainWindow(QMainWindow):
         left_layout.setSpacing(0)
 
         left_header = self._make_panel_header("Editor de Código  ·  .acl",
-                                               icon=Icons.code("#5edfe2", 14))
+                                               icon=Icons.code("#0ea5e9", 14))
         self.code_editor = CodeEditor()
 
         left_layout.addWidget(left_header)
@@ -60,16 +60,14 @@ class MainWindow(QMainWindow):
         self.resultado_tabs = QTabWidget()
         self.resultado_tabs.setObjectName("resultadoTabs")
         self.token_table = TokenTable()
-        self.ast_viewer = AstTreeViewer()
         self.ast_graph = AstGraphWidget()
         self.symbol_table_widget = SymbolTableWidget()
 
         TAB_ICON_COLOR = "#94a3b8"
         self.resultado_tabs.setIconSize(QSize(16, 16))
-        self.resultado_tabs.addTab(self.token_table,        Icons.list(TAB_ICON_COLOR, 16),  "Tokens")
-        self.resultado_tabs.addTab(self.ast_viewer,         Icons.tree(TAB_ICON_COLOR, 16),  "AST Texto")
-        self.resultado_tabs.addTab(self.ast_graph,          Icons.graph(TAB_ICON_COLOR, 16), "AST Gráfico")
-        self.resultado_tabs.addTab(self.symbol_table_widget, Icons.table(TAB_ICON_COLOR, 16), "Tabla de Símbolos")
+        self.resultado_tabs.addTab(self.token_table,         "Tokens")
+        self.resultado_tabs.addTab(self.ast_graph,           "Árbol Sintáctico")
+        self.resultado_tabs.addTab(self.symbol_table_widget, "Tabla de Símbolos")
 
         # Contenedor del panel de errores (header + tabla) para ocultar/mostrar como unidad
         self.error_container = QFrame()
@@ -142,28 +140,39 @@ class MainWindow(QMainWindow):
         toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
         self.addToolBar(toolbar)
 
-        # Análisis rápido (ícono de rayo)
-        self.action_analyze = QAction(Icons.zap("#ffffff"), "Analizar Rápido", self)
+        # Logo en la esquina superior izquierda
+        self.lbl_logo = QLabel()
+        logo_pixmap = QPixmap("Logo ENIGMA.png").scaled(
+            150, 40, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation
+        )
+        self.lbl_logo.setPixmap(logo_pixmap)
+        self.lbl_logo.setContentsMargins(8, 0, 16, 0)
+        toolbar.addWidget(self.lbl_logo)
+
+        # Análisis rápido
+        self.action_analyze = QAction("Analizar Rápido", self)
         self.action_analyze.setToolTip("Ejecutar análisis instantáneo (Ctrl+Enter)")
         self.action_analyze.setShortcut("Ctrl+Return")
         self.action_analyze.setObjectName("btnAnalyze")
         toolbar.addAction(self.action_analyze)
 
-        # Modo didáctico (ícono de pasos)
-        self.action_analyze_step = QAction(Icons.step("#ffffff"), "Modo Didáctico", self)
+        toolbar.addSeparator()
+
+        # Modo didáctico
+        self.action_analyze_step = QAction("Modo Didáctico", self)
         self.action_analyze_step.setToolTip("Analizar paso a paso (F10)")
         self.action_analyze_step.setShortcut("F10")
         self.action_analyze_step.setObjectName("btnDidactic")
         toolbar.addAction(self.action_analyze_step)
 
-        self.action_pause = QAction(Icons.pause("#fb923c"), "Pausa", self)
+        self.action_pause = QAction("Pausa", self)
         self.action_pause.setToolTip("Pausar / Continuar animación (Espacio)")
         self.action_pause.setShortcut("Space")
         self.action_pause.setVisible(False)
         self.action_pause.setObjectName("btnPause")
         toolbar.addAction(self.action_pause)
 
-        self.action_stop = QAction(Icons.stop("#ef4444"), "Finalizar", self)
+        self.action_stop = QAction("Finalizar", self)
         self.action_stop.setToolTip("Finalizar animación anticipadamente (Esc)")
         self.action_stop.setShortcut("Esc")
         self.action_stop.setVisible(False)
@@ -172,17 +181,26 @@ class MainWindow(QMainWindow):
 
         toolbar.addSeparator()
 
-        self.action_clear = QAction(Icons.x("#94a3b8"), "Limpiar", self)
+        self.action_clear = QAction("Limpiar", self)
         self.action_clear.setToolTip("Borrar editor y resultados (Ctrl+L)")
         self.action_clear.setShortcut("Ctrl+L")
         toolbar.addAction(self.action_clear)
 
         toolbar.addSeparator()
 
-        self.action_open = QAction(Icons.folder("#94a3b8"), "Cargar archivo", self)
+        self.action_open = QAction("Cargar archivo", self)
         self.action_open.setToolTip("Abrir archivo .acl (Ctrl+O)")
         self.action_open.setShortcut("Ctrl+O")
         toolbar.addAction(self.action_open)
+
+        toolbar.addSeparator()
+
+        self.action_export = QAction("Exportar JSON", self)
+        self.action_export.setToolTip("Exportar políticas compiladas a JSON (Ctrl+E)")
+        self.action_export.setShortcut("Ctrl+E")
+        self.action_export.setEnabled(False)
+        self.action_export.setObjectName("btnExport")
+        toolbar.addAction(self.action_export)
 
         spacer = QWidget()
         spacer.setSizePolicy(
@@ -191,17 +209,47 @@ class MainWindow(QMainWindow):
         )
         toolbar.addWidget(spacer)
 
-        self.lbl_lang = QLabel("Control de Accesos Empresarial  v1.0")
-        self.lbl_lang.setObjectName("lblLang")
-        toolbar.addWidget(self.lbl_lang)
+        # Controles de ventana (sin texto)
+        from PyQt6.QtWidgets import QToolButton
+        
+        self.btn_min = QToolButton(self)
+        self.btn_min.setIcon(Icons.minimize("#94a3b8"))
+        self.btn_min.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
+        self.btn_min.clicked.connect(self.showMinimized)
+        
+        self.btn_max = QToolButton(self)
+        self.btn_max.setIcon(Icons.maximize("#94a3b8"))
+        self.btn_max.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
+        self.btn_max.clicked.connect(self._toggle_maximize)
+        
+        self.btn_close = QToolButton(self)
+        self.btn_close.setIcon(Icons.x("#94a3b8"))
+        self.btn_close.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
+        self.btn_close.clicked.connect(self.close)
+
+        # Removemos algo de padding para estos botones en específico
+        btn_style = "QToolButton { padding: 6px; }"
+        self.btn_min.setStyleSheet(btn_style)
+        self.btn_max.setStyleSheet(btn_style)
+        self.btn_close.setStyleSheet(btn_style)
+
+        toolbar.addWidget(self.btn_min)
+        toolbar.addWidget(self.btn_max)
+        toolbar.addWidget(self.btn_close)
 
         self.action_open.triggered.connect(self._on_open_file)
+
+    def _toggle_maximize(self):
+        if self.isMaximized():
+            self.showNormal()
+        else:
+            self.showMaximized()
 
     def _build_statusbar(self):
         self.statusBar().setObjectName("statusBar")
 
         self.lbl_analyzer = QLabel("Estado: Esperando...")
-        self.lbl_analyzer.setStyleSheet("color: #4c6ef5; font-weight: 600;")
+        self.lbl_analyzer.setStyleSheet("color: #0ea5e9; font-weight: 600;")
         
         self.lbl_tokens = QLabel("Tokens: 0")
         self.lbl_errors = QLabel("Errores: 0")
@@ -286,15 +334,15 @@ class MainWindow(QMainWindow):
 
     def _separator(self) -> QFrame:
         sep = QFrame()
-        sep.setFrameShape(QFrame.Shape.VLine)
-        sep.setFrameShadow(QFrame.Shadow.Sunken)
+        sep.setFixedWidth(1)
+        sep.setStyleSheet("background-color: #2d3148; margin: 4px 0px;")
         return sep
 
     def _apply_styles(self):
         self.setStyleSheet("""
             /* ── Variables globales ── */
             QMainWindow, QWidget {
-                background-color: #0f1117;
+                background-color: #0A0E17;
                 color: #e2e8f0;
                 font-family: 'Segoe UI', 'SF Pro Display', system-ui, sans-serif;
                 font-size: 13px;
@@ -302,10 +350,10 @@ class MainWindow(QMainWindow):
 
             /* ── Toolbar ── */
             QToolBar#mainToolbar {
-                background-color: #1a1d27;
-                border-bottom: 1px solid #2d3148;
-                padding: 4px 8px;
-                spacing: 4px;
+                background-color: #0A0E17;
+                border-bottom: 1px solid #161c2d;
+                padding: 10px 14px;
+                spacing: 8px;
             }
             QToolBar#mainToolbar QToolButton {
                 background-color: transparent;
@@ -342,6 +390,21 @@ class MainWindow(QMainWindow):
             QToolBar#mainToolbar QToolButton[objectName="btnStop"] {
                 color: #ef4444;
             }
+            QToolBar#mainToolbar QToolButton[objectName="btnExport"] {
+                background-color: #166534;
+                color: #22c55e;
+                border-color: #16a34a;
+                font-weight: 600;
+            }
+            QToolBar#mainToolbar QToolButton[objectName="btnExport"]:hover {
+                background-color: #15803d;
+                color: #ffffff;
+            }
+            QToolBar#mainToolbar QToolButton[objectName="btnExport"]:disabled {
+                background-color: transparent;
+                color: #3a4256;
+                border-color: transparent;
+            }
             QLabel#lblLang {
                 color: #4a5568;
                 font-size: 11px;
@@ -355,9 +418,9 @@ class MainWindow(QMainWindow):
 
             /* ── Paneles y Tabs ── */
             QFrame#panelFrame {
-                background-color: #0f1117;
-                border: 1px solid #1e2235;
-                border-radius: 8px;
+                background-color: #0A0E17;
+                border: 1px solid #161c2d;
+                border-radius: 12px;
             }
             QTabWidget::pane {
                 border: none;
@@ -371,9 +434,9 @@ class MainWindow(QMainWindow):
                 font-weight: 500;
             }
             QTabBar::tab:selected {
-                background-color: #0f1117;
-                color: #5edfe2;
-                border-top: 2px solid #5edfe2;
+                color: #0ea5e9;
+                border-top: 2px solid #0ea5e9;
+                border-bottom: 2px solid transparent;
             }
             QTabBar::tab:hover:!selected {
                 background-color: #252838;
@@ -417,11 +480,15 @@ class MainWindow(QMainWindow):
 
             /* ── Statusbar ── */
             QStatusBar {
-                background-color: #1a1d27;
-                border-top: 1px solid #2d3148;
+                background-color: #0A0E17;
+                border-top: 2px solid;
+                border-top-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #0ea5e9, stop:1 #b700ff);
                 color: #4a5568;
                 font-size: 11px;
                 padding: 2px 0;
+            }
+            QStatusBar::item {
+                border: none;
             }
             QStatusBar QLabel {
                 color: #64748b;

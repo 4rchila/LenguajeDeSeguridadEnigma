@@ -325,8 +325,7 @@ class SemanticAnalyzer:
         finally:
             # Si lo creamos nosotros, lo retiramos al salir.
             if previo is None:
-                clave = node.error_id.lower()
-                self.tabla._tabla.pop(clave, None)  # acceso interno
+                self.tabla.eliminar(node.error_id)
 
     def _visit_SentenciaSalidaNode(self, node: ast.SentenciaSalidaNode):
         # Mostrar/Devolver: validar que el valor sea resoluble.

@@ -31,7 +31,7 @@ from semantic.symbol_table import (
 _TIPO_COLORS = {
     TIPO_ROL:              ("#3d2b1a", "#fb923c"),  # Naranja
     TIPO_USUARIO:          ("#1e3d2f", "#4ade80"),  # Verde
-    TIPO_MODULO:           ("#1a3340", "#38bdf8"),  # Azul cielo
+    TIPO_MODULO:           ("#1a3340", "#0ea5e9"),  # Azul claro (match logo)
     TIPO_VARIABLE_ENTORNO: ("#2c1a3d", "#c084fc"),  # Violeta
 }
 _DEFAULT = ("#1e2235", "#94a3b8")
@@ -75,7 +75,7 @@ class SymbolTableWidget(QTableWidget):
     def _apply_styles(self):
         self.setStyleSheet("""
             QTableWidget {
-                background-color: #0d1117;
+                background-color: #0A0E17;
                 color: #e2e8f0;
                 border: none;
                 outline: none;
@@ -91,7 +91,7 @@ class SymbolTableWidget(QTableWidget):
                 color: #93c5fd;
             }
             QHeaderView::section {
-                background-color: #111827;
+                background-color: #0A0E17;
                 color: #64748b;
                 border: none;
                 border-bottom: 2px solid #1e2235;
@@ -124,7 +124,8 @@ class SymbolTableWidget(QTableWidget):
         if tabla is None:
             return
 
-        filas = tabla.filas()
+        # Filtrar variables globales (ABAC) para no ensuciar la vista del usuario
+        filas = [sym for sym in tabla.filas() if not sym.es_global]
         self.setRowCount(len(filas))
 
         mono_font = QFont("JetBrains Mono, Fira Code, Consolas", 12)

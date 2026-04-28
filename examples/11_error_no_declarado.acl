@@ -1,9 +1,0 @@
-// Ejemplo 11: Provoca ERR_SEM_02 (Entidad No Declarada).
-// Regla 2 — Integridad Referencial:
-//   No se puede referenciar una entidad que no haya sido definida primero.
-
-Definir Rol Gerente;
-Definir Usuario Ana;
-
-// ↓↓↓ Falla: el Rol "Supervisor" nunca fue definido.
-Usuario Ana = Rol Supervisor;

@@ -9,7 +9,7 @@ from PyQt6.QtGui import QColor, QFont, QBrush
 from gui.icons import Icons
 
 TOKEN_COLORS = {
-    "PALABRA_RESERVADA": ("#1e3a5f", "#60a5fa"),
+    "PALABRA_RESERVADA": ("#1e3a5f", "#0ea5e9"),
     "IDENTIFICADOR":     ("#1e3d2f", "#4ade80"),
     "NUMERO":            ("#3d2b1a", "#fb923c"),
     "NUMERO_ENT":        ("#3d2b1a", "#fb923c"),
@@ -57,7 +57,7 @@ class TokenTable(QTableWidget):
     def _apply_styles(self):
         self.setStyleSheet("""
             QTableWidget {
-                background-color: #0d1117;
+                background-color: #0A0E17;
                 color: #e2e8f0;
                 border: none;
                 outline: none;
@@ -73,7 +73,7 @@ class TokenTable(QTableWidget):
                 color: #93c5fd;
             }
             QHeaderView::section {
-                background-color: #111827;
+                background-color: #0A0E17;
                 color: #64748b;
                 border: none;
                 border-bottom: 2px solid #1e2235;
@@ -88,7 +88,7 @@ class TokenTable(QTableWidget):
                 border-right: none;
             }
             QScrollBar:vertical {
-                background: #0d1117;
+                background: #0A0E17;
                 width: 8px;
             }
             QScrollBar::handle:vertical {

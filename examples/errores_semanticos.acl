@@ -1,0 +1,109 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// CATÁLOGO COMPLETO DE ERRORES SEMÁNTICOS — Lenguaje Enigma
+// ═══════════════════════════════════════════════════════════════════════════════
+// Este archivo es LÉXICA y SINTÁCTICAMENTE CORRECTO, pero viola las reglas
+// semánticas del lenguaje (ERR_SEM_01 a ERR_SEM_07).
+//
+// NOTA: El analizador semántico usa política "Fail-Fast", por lo tanto se
+// detendrá en el PRIMER error que encuentre. Para probar cada error individual,
+// comenta los bloques anteriores y descomenta el bloque deseado.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+
+// ─── Declaraciones base necesarias para los tests ──────────────────────────
+Definir Rol Gerente;
+Definir Rol Cajero;
+Definir Usuario Ana;
+Definir Modulo Ventas;
+Definir Modulo Reportes;
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ERR_SEM_01 — Redeclaración de Entidad
+// Regla 1: Un identificador no puede declararse dos veces.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ↓↓↓ ERROR: "Gerente" ya fue declarado como Rol en la línea 15.
+Definir Usuario Gerente;
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ERR_SEM_02 — Entidad No Declarada (Integridad Referencial)
+// Regla 2: No se puede referenciar una entidad que no fue definida.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ↓↓↓ ERROR: "Supervisor" nunca fue declarado.
+// Usuario Ana = Rol Supervisor;
+
+// ↓↓↓ ERROR: "Inventario" nunca fue declarado como Modulo.
+// Acceder Inventario;
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ERR_SEM_03 — Incompatibilidad de Tipos en Asignación
+// Regla 3: Solo se puede asignar un Rol a una entidad de tipo Usuario.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ↓↓↓ ERROR: "Ventas" es un Modulo, no un Usuario.
+// Usuario Ventas = Rol Gerente;
+
+// ↓↓↓ ERROR: "Cajero" es un Rol, no un Usuario.
+// Usuario Cajero = Rol Gerente;
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ERR_SEM_04 — Dominio Inválido (Coherencia de Operaciones RBAC)
+// Regla 4: Las operaciones de negocio (Consultar, Registrar, Modificar,
+//          Eliminar, Insertar) solo pueden aplicarse a un Modulo.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ↓↓↓ ERROR: "Gerente" es un Rol, no un Modulo.
+// Permitir Consultar Gerente;
+
+// ↓↓↓ ERROR: "Ana" es un Usuario, no un Modulo.
+// Rol Gerente = Permitir Consultar Ana;
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ERR_SEM_05 — Expresión No Booleana en Condición
+// Regla 5: La condición de Si/Mientras debe resolver a un valor booleano.
+//          Horario es Variable_Entorno de tipo Tiempo, no Booleano.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ↓↓↓ ERROR: Horario es Tiempo, no Booleano. Falta operador relacional.
+// Si Horario Entonces {
+//     Permitir Consultar Ventas;
+// }
+
+// ↓↓↓ ERROR: Una cadena literal no es booleana.
+// Si "texto" Entonces {
+//     Acceder Ventas;
+// }
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ERR_SEM_06 — Operación Inválida entre Tipos
+// Regla 6: Los operadores relacionales (<, >, <=, >=) requieren tipos
+//          numéricos compatibles en ambos operandos.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ↓↓↓ ERROR: Horario es Tiempo (numérico) pero "tarde" es Cadena.
+// Si Horario > "tarde" Entonces {
+//     Permitir Consultar Ventas;
+// }
+
+// ↓↓↓ ERROR: Comparar número con cadena.
+// Si MontoVenta == "mil" Entonces {
+//     Validar Ventas;
+// }
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ERR_SEM_07 — Conflicto de Políticas de Seguridad
+// Regla 7: Un mismo Rol no puede tener "Permitir" y "Denegar" sobre el mismo
+//          par (Operación, Modulo).
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ↓↓↓ ERROR: Gerente ya tiene "Permitir Consultar Reportes".
+// Rol Gerente = Permitir Consultar Reportes;
+// Rol Gerente = Denegar Consultar Reportes;

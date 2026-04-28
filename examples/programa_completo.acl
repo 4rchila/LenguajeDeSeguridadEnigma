@@ -1,0 +1,225 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// PROGRAMA COMPLETO — Todas las Estructuras del Lenguaje Enigma
+// ═══════════════════════════════════════════════════════════════════════════════
+// Este archivo demuestra TODAS las estructuras de código válidas del lenguaje:
+//   - Definición de Entidades (Rol, Usuario, Modulo)
+//   - Asignación de Roles a Usuarios (RBAC)
+//   - Asignación de Políticas a Roles (Permitir/Denegar + Operación + Módulo)
+//   - Reglas de Seguridad con y sin operación (Acceder, Validar, etc.)
+//   - Todas las 5 operaciones de negocio (Consultar, Registrar, Modificar,
+//     Eliminar, Insertar)
+//   - Condicional simple (Si...Entonces)
+//   - Condicional compuesto (Si...Entonces...Sino)
+//   - Condiciones binarias (==, !=, <, >, <=, >=)
+//   - Condiciones lógicas compuestas (Y, O, No)
+//   - Bucle (Mientras)
+//   - Selección múltiple (Elegir/Caso/Terminar)
+//   - Manejo de errores (Intentar/Atrapar/Error)
+//   - Salida (Mostrar cadenas, números, booleanos)
+//   - Retorno (Devolver)
+//   - Variables ABAC globales (Horario, MontoVenta, UbicacionIP)
+//   - Literales: Cadena, Entero, Decimal, Verdadero, Falso
+//
+// Este archivo pasa las 3 fases del compilador SIN ERRORES:
+//   ✓ Análisis Léxico    (0 errores)
+//   ✓ Análisis Sintáctico (0 errores)
+//   ✓ Análisis Semántico  (0 errores)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+
+// ─── 1. DEFINICIÓN DE ENTIDADES ────────────────────────────────────────────
+// Declara Roles, Usuarios y Módulos del sistema empresarial.
+
+Definir Rol Gerente;
+Definir Rol Cajero;
+Definir Rol Vendedor;
+Definir Rol Auditor;
+
+Definir Usuario Ana;
+Definir Usuario Beto;
+Definir Usuario Carla;
+Definir Usuario David;
+
+Definir Modulo Ventas;
+Definir Modulo Inventario;
+Definir Modulo Reportes;
+Definir Modulo Facturacion;
+
+
+// ─── 2. ASIGNACIÓN DE ROLES A USUARIOS (RBAC) ─────────────────────────────
+// Vincula cada Usuario con su Rol correspondiente.
+
+Usuario Ana   = Rol Gerente;
+Usuario Beto  = Rol Cajero;
+Usuario Carla = Rol Vendedor;
+Usuario David = Rol Auditor;
+
+
+// ─── 3. POLÍTICAS DE SEGURIDAD POR ROL (Permitir/Denegar + Operación) ──────
+// Define qué operaciones puede realizar cada Rol sobre cada Módulo.
+// Cubre las 5 operaciones de negocio: Consultar, Registrar, Modificar,
+// Eliminar e Insertar.
+
+Rol Gerente  = Permitir Consultar Reportes;
+Rol Gerente  = Permitir Modificar Ventas;
+Rol Gerente  = Permitir Eliminar Inventario;
+Rol Cajero   = Permitir Registrar Facturacion;
+Rol Cajero   = Permitir Insertar Ventas;
+Rol Vendedor = Permitir Consultar Inventario;
+Rol Auditor  = Permitir Consultar Reportes;
+Rol Auditor  = Denegar Modificar Reportes;
+
+
+// ─── 4. REGLAS DE SEGURIDAD SIMPLES (Sin operación de negocio) ─────────────
+// Acciones directas: Acceder y Validar operan sobre un Módulo directamente.
+
+Acceder Ventas;
+Acceder Reportes;
+Validar Inventario;
+Validar Facturacion;
+
+// Reglas con operación de negocio como sentencia independiente.
+Permitir Consultar Ventas;
+Denegar Eliminar Reportes;
+
+
+// ─── 5. CONDICIONAL SIMPLE (Si...Entonces) ─────────────────────────────────
+// Ejecuta un bloque solo si la condición es Verdadera.
+
+Si Verdadero Entonces {
+    Permitir Consultar Reportes;
+    Mostrar "Acceso concedido por condicion simple";
+}
+
+
+// ─── 6. CONDICIONAL COMPUESTO (Si...Entonces...Sino) ───────────────────────
+// Ejecuta un bloque u otro dependiendo de la condición.
+
+Si Falso Entonces {
+    Denegar Inventario;
+    Mostrar "Rama falsa activada";
+} Sino {
+    Validar Ventas;
+    Mostrar "Rama verdadera activada (Sino)";
+}
+
+
+// ─── 7. CONDICIONES BINARIAS CON OPERADORES RELACIONALES ───────────────────
+// Soporta: ==, !=, <, >, <=, >=, =>, =<, =
+
+Si 100 > 50 Entonces {
+    Mostrar "Comparacion numerica: 100 mayor que 50";
+}
+
+Si Verdadero == Verdadero Entonces {
+    Mostrar "Comparacion de igualdad booleana";
+}
+
+
+// ─── 8. VARIABLES ABAC GLOBALES EN CONDICIONES ────────────────────────────
+// Las variables Horario, MontoVenta y UbicacionIP están pre-inyectadas.
+
+// 8a. Horario: Variable de tipo Tiempo
+Si Horario < 18 Entonces {
+    Permitir Consultar Reportes;
+} Sino {
+    Denegar Consultar Reportes;
+}
+
+// 8b. MontoVenta: Variable de tipo Entero
+Si MontoVenta > 1000 Entonces {
+    Validar Ventas;
+    Mostrar "Venta de alto monto detectada";
+}
+
+// 8c. UbicacionIP: Variable de tipo Cadena
+Si UbicacionIP == "192.168.0.1" Entonces {
+    Acceder Reportes;
+    Mostrar "Acceso autorizado desde IP local";
+}
+
+
+// ─── 9. CONDICIONES LÓGICAS COMPUESTAS (Y, O, No) ─────────────────────────
+// Encadena múltiples condiciones con operadores lógicos.
+
+// 9a. Operador Y (conjunción)
+Si Horario > 8 Y Horario < 18 Entonces {
+    Mostrar "Dentro del horario laboral (Y)";
+}
+
+// 9b. Operador O (disyunción)
+Si Verdadero O Falso Entonces {
+    Mostrar "Al menos una condicion es verdadera (O)";
+}
+
+// 9c. Operador No (negación unaria)
+Si No Falso Entonces {
+    Mostrar "Negacion unaria: No Falso = Verdadero";
+}
+
+// 9d. Combinación compleja con precedencia (Y tiene mayor prioridad que O)
+Si Verdadero O Falso Y Verdadero Entonces {
+    Mostrar "Precedencia: se evalua como Verdadero O (Falso Y Verdadero)";
+}
+
+
+// ─── 10. BUCLE MIENTRAS ────────────────────────────────────────────────────
+// Repite un bloque mientras la condición sea Verdadera.
+
+Mientras Verdadero {
+    Si UbicacionIP == "10.0.0.1" Entonces {
+        Acceder Inventario;
+    }
+    Validar Ventas;
+    Mostrar "Ejecutando iteracion de monitoreo";
+}
+
+
+// ─── 11. SELECCIÓN MÚLTIPLE (Elegir/Caso/Terminar) ────────────────────────
+// Evalúa una variable contra múltiples casos posibles.
+
+Elegir ( Gerente ) {
+    Caso "Activo" : {
+        Permitir Modificar Ventas;
+        Mostrar "Caso Activo ejecutado";
+    } Terminar;
+
+    Caso "Inactivo" : {
+        Denegar Consultar Reportes;
+        Mostrar "Caso Inactivo ejecutado";
+    } Terminar;
+
+    Caso "Suspendido" : {
+        Denegar Eliminar Inventario;
+        Mostrar "Caso Suspendido ejecutado";
+    } Terminar;
+}
+
+
+// ─── 12. MANEJO DE ERRORES (Intentar/Atrapar/Error) ───────────────────────
+// Captura excepciones en tiempo de ejecución de reglas de seguridad.
+
+Intentar {
+    Acceder Reportes;
+    Permitir Consultar Facturacion;
+    Mostrar "Operaciones ejecutadas sin error";
+} Atrapar ( Error excepcion ) {
+    Denegar Consultar Facturacion;
+    Mostrar "Excepcion capturada en bloque Atrapar";
+}
+
+
+// ─── 13. SALIDA (Mostrar) — Todos los Tipos de Literales ──────────────────
+// Mostrar soporta: cadenas, enteros, decimales y booleanos.
+
+Mostrar "Sistema de Control de Accesos Enigma v3.0";
+Mostrar 2025;
+Mostrar 99.99;
+Mostrar Verdadero;
+Mostrar Falso;
+
+
+// ─── 14. RETORNO (Devolver) ────────────────────────────────────────────────
+// Indica el resultado final de la evaluación de políticas.
+
+Devolver Verdadero;

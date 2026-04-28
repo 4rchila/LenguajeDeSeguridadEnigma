@@ -1,0 +1,69 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// CATÁLOGO COMPLETO DE ERRORES LÉXICOS — Lenguaje Enigma
+// ═══════════════════════════════════════════════════════════════════════════════
+// Este archivo provoca TODOS los tipos de error léxico (ERROR_LEX_01 a ERROR_LEX_06)
+// que el Analizador Léxico del compilador Enigma puede detectar.
+// Al ejecutar este archivo, la Tabla de Tokens mostrará tokens tipo ERROR_LEXICO
+// y el Panel de Errores detallará cada uno con línea, columna y mensaje.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+
+// ─── ERROR_LEX_01: Carácter No Reconocido (Foráneo) ────────────────────────
+// Cualquier carácter que no pertenece al alfabeto del lenguaje.
+// Ejemplos: @, #, $, &, |, ~, `, ^, ?, \
+
+Definir Rol @Gerente;
+Definir Modulo #Ventas;
+Definir Usuario $Ana;
+Mostrar ~Verdadero;
+Acceder `Reportes;
+Si Verdadero ^ Falso Entonces { Validar Ventas; }
+
+
+// ─── ERROR_LEX_02: Cadena de Texto Sin Comilla de Cierre ───────────────────
+// Una cadena que abre con " pero nunca cierra en la misma línea.
+
+Mostrar "Esta cadena nunca se cierra y genera un error lexico ;
+Mostrar "Otra cadena abierta que tampoco cierra su comilla ;
+
+
+// ─── ERROR_LEX_03: Número Mal Formado (Múltiples Puntos Decimales) ─────────
+// Un número con más de un punto decimal.
+
+Mostrar 15.5.2;
+Mostrar 1.2.3.4;
+Mostrar 100.200.300;
+
+
+// ─── ERROR_LEX_04: Palabra Reservada Mal Escrita (Levenshtein) ─────────────
+// Identificadores a distancia Levenshtein ≤ 1 de una palabra reservada.
+// El compilador sugiere la corrección.
+
+Defini Rol Asistente;
+Mosrar "Hola mundo";
+Denegr Consultar Ventas;
+Permitr Registrar Inventario;
+
+
+// ─── ERROR_LEX_05: Identificador que Empieza con Número ────────────────────
+// Los identificadores no pueden iniciar con dígitos.
+
+Definir Rol 123Gerente;
+Definir Usuario 1Ana;
+Mostrar 007Agente;
+Definir Modulo 42Ventas;
+
+
+// ─── ERROR_LEX_06: Identificador con Guion Bajo ────────────────────────────
+// El lenguaje Enigma NO permite guiones bajos en identificadores.
+
+Definir Rol mi_rol;
+Definir Usuario juan_perez;
+Definir Modulo modulo_ventas;
+Acceder reporte_principal;
+
+
+// ─── COMBINACIÓN: Múltiples Errores en una Sola Línea ──────────────────────
+// El lexer debe reportar todos los errores sin detenerse.
+
+Defini @Rol #$123mi_variable "cadena sin cerrar 15.5.2;

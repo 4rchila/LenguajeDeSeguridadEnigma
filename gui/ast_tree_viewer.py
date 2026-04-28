@@ -137,6 +137,15 @@ class AstTreeViewer(QTreeWidget):
             item.addChild(self._create_tree_item(node.izq))
             item.addChild(self._create_tree_item(node.der))
             
+        elif isinstance(node, ast.CondicionLogicaNode):
+            item.setText(0, f"Operador Lógico: '{node.operador}'")
+            item.addChild(self._create_tree_item(node.izq))
+            item.addChild(self._create_tree_item(node.der))
+
+        elif isinstance(node, ast.CondicionUnariaNode):
+            item.setText(0, f"Operador Unario: '{node.operador}'")
+            item.addChild(self._create_tree_item(node.expresion))
+
         elif isinstance(node, ast.LiteralNode):
             item.setText(0, f"[{node.tipo}] {node.valor}")
             
