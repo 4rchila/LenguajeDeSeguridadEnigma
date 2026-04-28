@@ -237,7 +237,6 @@ class Controller:
             self.window.lbl_analyzer.setText("Estado: Modo Didáctico — Analizador Léxico")
             self.window.action_pause.setVisible(True)
             self.window.action_pause.setEnabled(True)
-            self.window.action_pause.setIcon(Icons.pause("#fb923c"))
             self.window.action_pause.setText("Pausa")
             self.window.action_stop.setVisible(True)
             self.window.statusBar().clearMessage()
@@ -255,16 +254,14 @@ class Controller:
         if self.anim_state == AnimationState.PLAYING:
             self.anim_state = AnimationState.PAUSED
             self.anim_timer.stop()
-            self.window.action_pause.setIcon(Icons.play("#fb923c"))
             self.window.action_pause.setText("Continuar")
-            phase_name = "Léxico" if self.anim_phase == AnimationPhase.LEXER else "Sintáctico"
+            phase_name = "Léxico" if self.anim_phase == AnimationPhase.LEXER else ("Sintáctico" if self.anim_phase == AnimationPhase.SYNTAX else "Semántico")
             self.window.lbl_analyzer.setText(f"Estado: Modo Didáctico — Pausa ({phase_name})")
         elif self.anim_state == AnimationState.PAUSED:
             self.anim_state = AnimationState.PLAYING
             self.anim_timer.start(self.anim_delay)
-            self.window.action_pause.setIcon(Icons.pause("#fb923c"))
             self.window.action_pause.setText("Pausa")
-            phase_name = "Léxico" if self.anim_phase == AnimationPhase.LEXER else "Sintáctico"
+            phase_name = "Léxico" if self.anim_phase == AnimationPhase.LEXER else ("Sintáctico" if self.anim_phase == AnimationPhase.SYNTAX else "Semántico")
             self.window.lbl_analyzer.setText(f"Estado: Modo Didáctico — Analizador {phase_name}")
 
     # ─────────────────────────────────────────────────────────────
@@ -415,6 +412,8 @@ class Controller:
             self._lexer_step()
         elif self.anim_phase == AnimationPhase.SYNTAX:
             self._syntax_step()
+        elif self.anim_phase == AnimationPhase.SEMANTIC:
+            self._semantic_step()
 
     def _lexer_step(self):
         if self.didactic_current_idx >= len(self.didactic_tokens):
@@ -511,14 +510,60 @@ class Controller:
         # Auto-cambiar a la pestaña de Tabla de Símbolos para la fase semántica
         self.window.resultado_tabs.setCurrentIndex(TAB_TABLA_SIMBOLOS)
 
-        analizador = SemanticAnalyzer()
-        ok = analizador.analizar(self.syntax_ast)
-        self.window.symbol_table_widget.populate(analizador.tabla)
+        self.anim_phase = AnimationPhase.SEMANTIC
+        self.window.lbl_analyzer.setText("Estado: Modo Didáctico — Analizador Semántico")
 
-        if not ok:
-            err = analizador.errores[0]
-            self.window.error_panel.populate(analizador.errores)
-            self.window.lbl_errors.setText(f"Errores: {len(analizador.errores)}")
+        # Ejecutamos con record_history=True para capturar los pasos
+        analizador = SemanticAnalyzer(record_history=True)
+        self.semantic_ok = analizador.analizar(self.syntax_ast)
+        self.semantic_history = analizador.historial
+        self.semantic_errors = analizador.errores
+        self.semantic_step_idx = 0
+
+    def _semantic_step(self):
+        if self.semantic_step_idx >= len(self.semantic_history):
+            self._on_semantic_finished()
+            return
+            
+        node, snapshot_tabla = self.semantic_history[self.semantic_step_idx]
+        
+        # Resaltar en el editor el código asociado al nodo actual
+        if node is not None:
+            start_token = getattr(node, 'start_token', None)
+            end_token = getattr(node, 'end_token', None)
+            
+            if start_token and end_token:
+                start_idx = getattr(start_token, 'start_index', -1)
+                end_idx = getattr(end_token, 'end_index', -1)
+                if start_idx >= 0 and end_idx >= 0:
+                    self.window.code_editor.set_didactic_highlight(start_idx, end_idx, False, phase='semantic')
+            elif start_token:
+                start_idx = getattr(start_token, 'start_index', -1)
+                end_idx = getattr(start_token, 'end_index', start_idx + 1)
+                if start_idx >= 0:
+                    self.window.code_editor.set_didactic_highlight(start_idx, end_idx, False, phase='semantic')
+        else:
+            self.window.code_editor.set_didactic_highlight(-1, -1)
+            
+        # Actualizar tabla de símbolos con la captura actual
+        self.window.symbol_table_widget.populate(snapshot_tabla)
+        
+        total = len(self.semantic_history)
+        current = self.semantic_step_idx + 1
+        self.window.statusBar().showMessage(
+            f"Analizando semántica… paso {current} de {total}", 2000
+        )
+        
+        self.semantic_step_idx += 1
+
+    def _on_semantic_finished(self):
+        """Animación semántica terminada."""
+        self.window.code_editor.set_didactic_highlight(-1, -1)
+        
+        if not self.semantic_ok:
+            err = self.semantic_errors[0]
+            self.window.error_panel.populate(self.semantic_errors)
+            self.window.lbl_errors.setText(f"Errores: {len(self.semantic_errors)}")
             self.window.show_error_panel()
             self.window.lbl_analyzer.setText(
                 f"Error Semántico · {err.codigo}"
@@ -526,7 +571,6 @@ class Controller:
             self.window.statusBar().showMessage(
                 f"Análisis abortado en la fase semántica · {err.codigo}", 8000
             )
-            self.window.resultado_tabs.setCurrentIndex(TAB_TABLA_SIMBOLOS)
         else:
             self.window.error_panel.clear_panel()
             self.window.hide_error_panel()
@@ -538,7 +582,6 @@ class Controller:
                 "Análisis completo — AST y tabla de símbolos generados con éxito.",
                 5000,
             )
-            self.window.resultado_tabs.setCurrentIndex(TAB_TABLA_SIMBOLOS)
 
         self._stop_animation(finished=False)
 
@@ -550,7 +593,6 @@ class Controller:
         self.window.action_pause.setEnabled(False)
         self.window.action_pause.setVisible(False)
         self.window.action_stop.setVisible(False)
-        self.window.action_pause.setIcon(Icons.pause("#fb923c"))
         self.window.action_pause.setText("Pausa")
 
         if finished:

@@ -22,6 +22,7 @@ Estrategia de implementación:
       Tabla de Símbolos, ni siquiera dentro de bloques anidados.
 """
 
+import copy
 from typing import List, Optional
 
 import parser.ast_nodes as ast
@@ -88,10 +89,12 @@ class SemanticAnalyzer:
         * `exitoso`   → bool: True si y sólo si la lista está vacía.
     """
 
-    def __init__(self):
+    def __init__(self, record_history: bool = False):
         self.tabla = SymbolTable(inicializar_globales=True)
         self.errores: List[SemanticError] = []
         self.exitoso: bool = False
+        self.record_history = record_history
+        self.historial = []  # Lista de tuplas (nodo, snapshot_tabla_simbolos)
 
     # ---------- API pública ----------
 
@@ -101,6 +104,10 @@ class SemanticAnalyzer:
         ocurre. Retorna True si el análisis fue exitoso.
         """
         self.errores.clear()
+        if self.record_history:
+            self.historial.clear()
+            # Guardamos el estado inicial antes de visitar nada
+            self.historial.append((None, copy.deepcopy(self.tabla)))
         try:
             if arbol is None:
                 return True
@@ -118,7 +125,12 @@ class SemanticAnalyzer:
         if node is None:
             return None
         method = getattr(self, f"_visit_{type(node).__name__}", self._visit_generico)
-        return method(node)
+        resultado = method(node)
+        
+        if self.record_history:
+            self.historial.append((node, copy.deepcopy(self.tabla)))
+            
+        return resultado
 
     def _visit_generico(self, node: ast.ASTNode):
         # Caso por defecto: si llegamos a un nodo no manejado, no lo

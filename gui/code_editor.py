@@ -303,6 +303,9 @@ class CodeEditor(QPlainTextEdit):
         elif self._didactic_phase == 'syntax':
             fmt.setBackground(QColor("#312e81"))  # Indigo/violeta oscuro
             fmt.setForeground(QColor("#c7d2fe"))  # Letra lavanda
+        elif self._didactic_phase == 'semantic':
+            fmt.setBackground(QColor("#9a3412"))  # Naranja tostado oscuro (amber)
+            fmt.setForeground(QColor("#ffedd5"))  # Letra naranja claro
         else:
             fmt.setBackground(QColor("#047857"))  # Verde esmeralda oscuro
             fmt.setForeground(QColor("#a7f3d0"))  # Letra verde claro
