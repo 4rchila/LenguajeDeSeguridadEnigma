@@ -1,94 +1,111 @@
 # Compilador — Lenguaje de Control de Accesos Empresarial (Enigma)
 
 ## ¿Qué es?
-Este proyecto es la implementación completa de las **3 Fases** de un compilador para el **Lenguaje de Control de Accesos Empresarial (Enigma)**:
+Este proyecto es la implementación de las **tres fases de análisis** de un compilador para el **Lenguaje de Control de Accesos Empresarial (Enigma)**, más una **capa de salida** que exporta políticas compiladas a JSON:
 
 1. **Fase 1 — Analizador Léxico:** Escaneo de tokens y detección de errores léxicos.
 2. **Fase 2 — Analizador Sintáctico:** Construcción del Árbol de Sintaxis Abstracta (AST).
 3. **Fase 3 — Analizador Semántico:** Validación de reglas RBAC/ABAC y generación de Tabla de Símbolos.
+4. **Exportación (JSON):** Tras un análisis semántico exitoso, la GUI puede exportar políticas y metadatos mediante `codegen/policy_exporter.py` (atajo configurado en la aplicación).
 
-La aplicación incluye una **GUI PyQt6** avanzada que proporciona una experiencia de desarrollo interactiva y visual para entender cómo un compilador analiza el código, incluyendo un **Modo Didáctico** con animaciones en tiempo real.
+La aplicación incluye una **GUI PyQt6** que ofrece una experiencia interactiva para ver cómo el compilador procesa el código, incluyendo un **Modo Didáctico** con animación paso a paso.
 
-### Características Principales Implementadas:
-- **Analizador Léxico Completo:** Escaneo de tokens, reconocimiento de patrones, y detección de 6 tipos de errores léxicos (con soporte de recuperación y distancia Levenshtein para sugerencias).
-- **Analizador Sintáctico Descendente (Recursive Descent):** Construcción estructurada del AST implementada en base a la gramática BNF del lenguaje, con soporte de condiciones lógicas compuestas (Y, O, No).
-- **Recuperación de Errores Sintácticos (Modo Pánico):** Si el código tiene un error sintáctico, el compilador sincroniza sobre delimitadores (`;`, `{}`) para seguir analizando y encontrar más errores sin colapsar.
-- **Analizador Semántico con 7 Validaciones:** Unicidad de entidades, integridad referencial, compatibilidad de tipos, coherencia RBAC, expresiones booleanas, operaciones entre tipos, y conflicto de políticas.
-- **Tabla de Símbolos:** Registro de entidades (Roles, Usuarios, Módulos) con políticas de seguridad y variables ABAC globales (Horario, MontoVenta, UbicacionIP).
-- **Modo Didáctico Animado:** Simulación paso a paso con 3 fases:
-  1. *Fase Léxica:* Reconocimiento token por token sincronizado con el código.
-  2. *Fase Sintáctica:* Construcción iterativa (nodo a nodo) del AST visual.
-  3. *Fase Semántica:* Validación de reglas de negocio.
-- **Error Lens e Interfaz Dinámica:** Subrayado de errores en tiempo real y ocultamiento inteligente del panel de errores.
-- **Visor de AST Gráfico y Estructurado:** Vista de árbol clásica y diagrama interactivo con nodos circulares y arcos.
-- **Tabla de Símbolos Visual:** Pestaña dedicada mostrando Identificador, Tipo, Sub-Tipo, Rol Vinculado y Políticas.
+### Características principales implementadas
+- **Analizador léxico:** Tokens por regex priorizada, errores léxicos catalogados y sugerencias por distancia de edición (Levenshtein) para palabras reservadas mal escritas.
+- **Analizador sintáctico (descenso recursivo):** AST alineado con la gramática BNF del lenguaje; condiciones lógicas compuestas (Y, O, No) con precedencia definida.
+- **Recuperación sintáctica (modo pánico):** Sincronización ante errores para seguir reportando sin colapsar.
+- **Analizador semántico (7 reglas):** Unicidad de entidades, integridad referencial, compatibilidad de tipos, coherencia RBAC, expresiones booleanas en condiciones, operaciones entre tipos y conflicto de políticas (`ERR_SEM_01` … `ERR_SEM_07`).
+- **Tabla de símbolos:** Roles, usuarios, módulos, políticas y variables ABAC globales (`Horario`, `MontoVenta`, `UbicacionIP`).
+- **Modo didáctico:** Tres etapas animadas — tokens en el editor, construcción gráfica del AST, recorrido semántico con actualización de la tabla de símbolos.
+- **Error Lens y panel de errores:** Subrayado léxico en el editor; panel de errores que se muestra solo cuando hay incidencias.
+- **Visualización del AST:** En la ventana principal se usa el **diagrama interactivo** (`AstGraphWidget`: nodos, arcos y animación). El módulo `gui/ast_tree_viewer.py` (árbol tipo `QTreeWidget`) está en el repositorio como componente reutilizable **no conectado** actualmente a la ventana principal.
+- **Tabla de símbolos en GUI:** Pestaña dedicada con identificador, tipo, subtipo, rol vinculado y políticas.
 
 ---
 
-## Arquitectura (Capas)
+## Arquitectura (capas)
 
-El sistema se divide en módulos fuertemente cohesivos y desacoplados:
+### 1) `lexer/` (motor léxico)
+- `lexer/tokens.py`: `TipoToken`, `Token`, palabras reservadas (comparación case-insensitive en el flujo de análisis).
+- `lexer/error_handler.py`: Acumulación de errores léxicos.
+- `lexer/lexer.py`: Clase `Lexer` — tokenización del fuente.
 
-### 1) Capa `lexer/` (Motor Léxico)
-- `lexer/tokens.py`: Define tipos de tokens (`TipoToken`) y diccionarios de palabras reservadas (case-insensitive).
-- `lexer/error_handler.py`: Gestiona los errores léxicos permitiendo al escáner reportar en cadena sin interrumpir a la primera.
-- `lexer/lexer.py`: Clase principal `Lexer` que consume código mediante expresiones regulares priorizadas y emite una lista de `Token`.
+### 2) `parser/` (motor sintáctico)
+- `parser/ast_nodes.py`: Nodos del AST del lenguaje.
+- `parser/parser.py`: Clase `Parser` — análisis descendente con precedencia de operadores lógicos (`O` más débil, luego `Y`, luego `No`, luego relacionales).
 
-### 2) Capa `parser/` (Motor Sintáctico)
-- `parser/ast_nodes.py`: Define 14 tipos de nodos del AST que representan todas las expresiones y comandos del lenguaje (`ProgramNode`, `DefinicionEntidadNode`, `SiEntoncesNode`, `CondicionLogicaNode`, etc.).
-- `parser/parser.py`: Clase principal `Parser`. Analizador descendente predictivo (recursive descent) con precedencia de operadores lógicos (O < Y < No < relacionales).
+### 3) `semantic/` (motor semántico)
+- `semantic/semantic_analyzer.py`: Visitor sobre el AST; validaciones y opción de historial para el modo didáctico.
+- `semantic/symbol_table.py`: Tabla de símbolos e inyección de variables ABAC globales.
+- `semantic/semantic_errors.py`: Códigos y tipo de error semántico.
 
-### 3) Capa `semantic/` (Motor Semántico)
-- `semantic/semantic_analyzer.py`: Analizador que recorre el AST con patrón Visitor y valida 7 reglas semánticas (ERR_SEM_01 a ERR_SEM_07).
-- `semantic/symbol_table.py`: Tabla de Símbolos con registro de entidades, políticas RBAC, y variables de entorno ABAC globales.
-- `semantic/semantic_errors.py`: Catálogo de 7 errores semánticos con códigos y mensajes descriptivos.
+### 4) `codegen/` (salida compilada)
+- `codegen/policy_exporter.py`: Genera documento JSON (entidades, políticas RBAC, reglas condicionales del AST, matriz de acceso, metadatos).
 
-### 4) Capa `gui/` (Interfaz Gráfica - PyQt6)
-- `gui/main_window.py`: Ventana principal con layout dual (editor + paneles de resultados).
-- `gui/code_editor.py`: Editor de texto con numeración de líneas, syntax highlighting, y Error Lens (subrayado ondulado rojo).
-- `gui/token_table.py` & `ErrorPanel`: Tablas de tokens y listado de errores (léxicos, sintácticos y semánticos diferenciados con íconos).
-- `gui/ast_tree_viewer.py`: Árbol jerárquico tipo carpetas del AST.
-- `gui/ast_graph_widget.py`: Motor gráfico personalizado con nodos circulares, flechas y animación paso a paso.
-- `gui/symbol_table_widget.py`: Visualización tabular de la Tabla de Símbolos (Fase 3).
-- `gui/icons.py`: Biblioteca de 15 íconos vectoriales dibujados con QPainter (sin dependencias externas).
+### 5) `gui/` (PyQt6)
+- `gui/main_window.py`: Ventana principal, pestañas (Tokens, Árbol sintáctico, Tabla de símbolos), toolbar y estilos.
+- `gui/code_editor.py`: Editor con resaltado y marcado de errores léxicos / modo didáctico.
+- `gui/token_table.py` y `ErrorPanel`: Lista de tokens y de errores (léxicos, sintácticos, semánticos).
+- `gui/ast_graph_widget.py`: Vista gráfica del AST usada en la aplicación.
+- `gui/ast_tree_viewer.py`: Visor de AST en árbol (no integrado en la ventana principal en esta versión).
+- `gui/symbol_table_widget.py`: Tabla de símbolos visual.
+- `gui/icons.py`: Iconos vectoriales con `QPainter`.
+- `gui/__init__.py`: Reexporta componentes públicos del paquete.
 
-### 5) Capa `controller.py` (Coordinador)
-- Orquesta las 3 fases del pipeline de compilación.
-- Gestiona el Modo Didáctico con máquina de estados (Léxico → Sintáctico → Semántico).
-- Implementa Live Compile (compilación silenciosa debounced al editar).
+### 6) `controller.py` (coordinador)
+- Encadena léxico → sintáctico → semántico; refresca la GUI.
+- Modo didáctico, análisis completo (toolbar) y compilación en vivo con debounce al editar.
+- Habilita la exportación JSON cuando el pipeline semántico termina sin error.
+
+### 7) Punto de entrada
+- `main.py`: Arranque de `QApplication`, `MainWindow` y `Controller`.
 
 ---
 
-## Archivos de Prueba
+## Archivos de prueba y ejemplos
 
-### Carpeta `examples/` (16 archivos `.acl`)
-1. `01-05`: Ejemplos básicos del lenguaje.
-2. `06_estructuras_correctas.acl`: **Todas** las estructuras gramaticales válidas.
-3. `07_errores_lexicos.acl`: Todos los errores de escáner posibles.
-4. `08_errores_sintacticos.acl`: Prueba del Modo Pánico (7 errores sin crash).
-5. `09-16`: Ejemplos semánticos, incluyendo cada uno de los 7 errores semánticos y un programa empresarial completo.
+### Carpeta `examples/` (5 archivos `.acl`)
+| Archivo | Uso típico |
+|---------|------------|
+| `programa_completo.acl` | Programa de referencia con la mayoría de construcciones válidas del lenguaje. |
+| `empresa_ventas.acl` | Escenario de dominio empresarial / ventas. |
+| `errores_lexicos.acl` | Casos de error léxico. |
+| `errores_sintacticos.acl` | Casos de error sintáctico y recuperación. |
+| `errores_semanticos.acl` | Casos de error semántico. |
 
-### Carpeta `test/` (Pruebas Automatizadas)
-- `test/test_case.py`: Suite de 60 tests con pytest cubriendo las 3 fases.
+### Carpeta `test/`
+- `test/test_case.py`: Suite **pytest** (61 pruebas) sobre las fases léxica, sintáctica y semántica.
+
+### Carpeta `demo_erp/`
+- `demo_erp/index.html`: Página estática de demostración / presentación de integración tipo ERP (HTML/CSS; no ejecuta el motor Python).
+
+### Documentación adicional en la raíz
+- `fase2_analizador_sintactico.md` — Especificación y BNF de la fase sintáctica.
+- `fase3_analizador_semantico.md` — Diseño del analizador semántico y de la tabla de símbolos.
+- `Presentacion_Enigma.html` — Presentación en HTML (Reveal.js vía CDN).
 
 ---
 
 ## Ejecución del compilador
 
-### Requisitos Previos
+### Requisitos previos
 - Python 3.11 o superior.
-- Instalar las dependencias:
+- Instalar dependencias:
+
 ```bash
 pip install -r requirements.txt
 ```
 
-### Iniciar la App
+### Iniciar la aplicación
+
 ```bash
 python main.py
 ```
-> **Nota de uso:** El panel de errores en la parte inferior derecha estará oculto de forma inteligente. Solamente aparecerá cuando el archivo tenga algún código erróneo.
 
-### Ejecutar Tests
+> **Nota de uso:** El panel de errores inferior puede permanecer oculto hasta que existan errores o advertencias que mostrar.
+
+### Ejecutar tests
+
 ```bash
 python -m pytest test/test_case.py -v
 ```

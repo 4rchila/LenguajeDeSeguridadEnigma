@@ -1,28 +1,44 @@
-  analizador_lexico/
-  ├── lexer/
-  │   ├── tokens.py              ← Jordi Garcia
-  │   ├── lexer.py               ← Jordi Garcia
-  │   └── error_handler.py       ← Jordi Garcia
-  ├── parser/
-  │   ├── ast_nodes.py           ← German Archila
-  │   └── parser.py              ← German Archila
-  ├── semantic/
-  │   ├── __init__.py            ← German Archila
-  │   ├── semantic_errors.py     ← German Archila
-  │   ├── symbol_table.py        ← German Archila
-  │   └── semantic_analyzer.py   ← German Archila
-  ├── gui/
-  │   ├── main_window.py         ← Victor Morales
-  │   ├── code_editor.py         ← Victor Morales
-  │   ├── token_table.py         ← Victor Morales
-  │   ├── ast_tree_viewer.py     ← Victor Morales
-  │   ├── ast_graph_widget.py    ← Victor Morales
-  │   └── symbol_table_widget.py ← Victor Morales
-  ├── controller.py              ← German Archila
-  ├── tests/
-  │   └── test_cases.py          ← German Archila
-  ├── examples/                  ← German Archila
-  │   ├── 01_roles_y_usuarios.acl   … 08_errores_sintacticos.acl
-  │   └── 09_semantica_correcta.acl … 16_programa_completo_semantico.acl
-  ├── main.py
-  └── requirements.txt
+LenguajeDeSeguridadEnigma/
+├── lexer/
+│   ├── __init__.py              
+│   ├── tokens.py                
+│   ├── lexer.py                 
+│   └── error_handler.py         
+├── parser/
+│   ├── __init__.py              
+│   ├── ast_nodes.py             
+│   └── parser.py                
+├── semantic/
+│   ├── __init__.py              
+│   ├── semantic_errors.py       
+│   ├── symbol_table.py          
+│   └── semantic_analyzer.py     
+├── codegen/
+│   ├── __init__.py
+│   └── policy_exporter.py       ← exportación JSON (políticas compiladas)
+├── gui/
+│   ├── __init__.py              
+│   ├── main_window.py           
+│   ├── code_editor.py           
+│   ├── token_table.py           
+│   ├── ast_tree_viewer.py       (componente; no enlazado a main_window)
+│   ├── ast_graph_widget.py      
+│   ├── symbol_table_widget.py   
+│   └── icons.py                 
+├── test/
+│   └── test_case.py            (pytest, 3 fases)
+├── examples/
+│   ├── programa_completo.acl
+│   ├── empresa_ventas.acl
+│   ├── errores_lexicos.acl
+│   ├── errores_sintacticos.acl
+│   └── errores_semanticos.acl
+├── demo_erp/
+│   └── index.html               ← demo estática HTML
+├── controller.py                
+├── main.py
+├── requirements.txt
+├── README.md
+├── estructura.txt               ← este archivo
+├── .gitignore
+└── Logo ENIGMA.png
