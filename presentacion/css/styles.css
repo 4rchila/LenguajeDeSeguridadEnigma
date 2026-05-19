@@ -1462,3 +1462,39 @@ kbd {
     font-size: 0.76rem;
   }
 }
+
+/* ====== Closing Slide ====== */
+.closing-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - var(--topbar-h) - var(--bottombar-h) - 72px);
+}
+
+.closing-logo {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 180px;
+  height: 180px;
+}
+
+.closing-logo .halo {
+  position: absolute;
+  inset: 10%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(217, 179, 101, 0.32) 0%, rgba(217, 179, 101, 0.08) 40%, transparent 70%);
+  filter: blur(20px);
+  z-index: 0;
+}
+
+.closing-logo img.logo {
+  position: relative;
+  z-index: 2;
+  width: 120px;
+  filter: drop-shadow(0 18px 40px rgba(217, 179, 101, 0.35))
+          drop-shadow(0 4px 12px rgba(0, 0, 0, 0.6));
+  animation: float 7s ease-in-out infinite;
+}
