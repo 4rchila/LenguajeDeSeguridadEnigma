@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ENIGMA · Lenguaje de Seguridad Empresarial</title>
+  <meta name="description" content="Pitch ejecutivo del Compilador ENIGMA: el lenguaje que convierte políticas de seguridad en código auditable y desplegable." />
+  <link rel="icon" href="assets/logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="no-select">
+
+  <!-- ===== Barra superior ===== -->
+  <header class="topbar">
+    <div class="brand">
+      <img src="assets/logo.png" alt="ENIGMA" />
+      <span><strong>ENIGMA</strong></span>
+      <span class="sep"></span>
+      <span>Lenguaje de Seguridad Empresarial</span>
+    </div>
+    <div class="topbar-meta">
+      <span>URL · Compiladores · 2026</span>
+    </div>
+  </header>
+  <div id="progress-bar" class="progress-bar"></div>
+
+  <!-- ===== Deck ===== -->
+  <main class="deck" id="deck">
+
+    <!-- =============================================================
+         00 · QR de bienvenida
+    ============================================================== -->
+    <section class="slide" data-title="QR">
+      <div class="slide-inner">
+        <div class="qr-intro">
+          <h2 class="title" style="text-align:center; margin-bottom: 12px;">Escanea para 
+            <span class="accent">conocer más.</span>
+          </h2>
+          <p class="lede" style="text-align:center; max-width: 540px; margin: 0 auto 36px;">Accede a la documentación completa, el código fuente y la página web del proyecto.</p>
+          <div class="qr-container">
+            <img src="assets/qr.jpg" alt="QR Code — Escanea para más información" class="qr-image" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =============================================================
+         01 · Portada
+    ============================================================== -->
+    <section class="slide" data-title="Portada">
+      <div class="slide-inner">
+        <div class="cover">
+          <div class="cover-text">
+            <span class="eyebrow"><span class="num">01</span>Presentación del proyecto</span>
+            <h1 class="headline">
+              El lenguaje que <span class="accent" style="font-family:var(--font-display); font-style:italic;">protege</span><br>
+              tu empresa.
+            </h1>
+            <p class="tagline">Convertimos las reglas de seguridad de tu negocio en código auditable, en español, listo para producción.</p>
+            <p class="lede">
+              <b>ENIGMA</b> es un compilador completo —léxico, sintáctico, semántico y generación de código— que transforma un archivo de texto en políticas RBAC/ABAC desplegables en cualquier ERP.
+            </p>
+            <div class="marks">
+              <span class="mark"><span class="led"></span>Python 3.12</span>
+              <span class="mark"><span class="led"></span>RBAC + ABAC</span>
+              <span class="mark"><span class="led"></span>4 fases</span>
+              <span class="mark"><span class="led"></span>60+ pruebas automatizadas</span>
+              <span class="mark"><span class="led"></span>Exporta a JSON</span>
+            </div>
+            <div class="team">
+              <div class="person"><span class="role">Backend · Léxico</span><span class="name">Jordi García</span></div>
+              <div class="person"><span class="role">Frontend · GUI</span><span class="name">Víctor Morales</span></div>
+              <div class="person"><span class="role">Integración · Parser</span><span class="name">Germán Archila</span></div>
+            </div>
+          </div>
+          <div class="cover-visual">
+            <div class="logo-ring">
+              <div class="halo"></div>
+              <img class="logo" src="assets/logo.png" alt="Logo ENIGMA" />
+            </div>
+            <span class="corner-mark tl">v 3.0</span>
+            <span class="corner-mark tr">Quetzaltenango<br>2026</span>
+            <span class="corner-mark bl">Universidad<br>Rafael Landívar</span>
+            <span class="corner-mark br">Compiladores</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =============================================================
+         02 · El problema
+    ============================================================== -->
+    <section class="slide" data-title="El problema">
+      <div class="slide-inner">
+        <span class="eyebrow rose"><span class="num">02</span>El problema · Contexto</span>
+        <h2 class="title">Decidir <span class="accent">quién accede a qué</span><br>cuesta más de lo que parece.</h2>
+        <p class="lede">
+          En toda empresa, las políticas de acceso viven dispersas en hojas de cálculo, JSON sueltos y código duro del ERP.
+          Una sola línea mal escrita puede dejar las ventas a la vista del becario o cerrar el sistema al gerente regional.
+        </p>
+
+        <div class="grid cols-3">
+          <div class="card">
+            <div class="index">Dolor · 01</div>
+            <h3>Reglas dispersas</h3>
+            <p>Las políticas RBAC/ABAC se duplican en cada microservicio. Un cambio implica modificar N archivos a mano — y rezar para no romper nada.</p>
+          </div>
+          <div class="card">
+            <div class="index">Dolor · 02</div>
+            <h3>Errores silenciosos</h3>
+            <p>Un rol mal escrito, una política duplicada o un permiso contradictorio se descubren <i>después</i> del incidente de seguridad, no antes.</p>
+          </div>
+          <div class="card">
+            <div class="index">Dolor · 03</div>
+            <h3>Sin lenguaje de negocio</h3>
+            <p>El área de Seguridad necesita revisar las reglas antes de pasar a producción. Pero las reglas viven en código que solo entienden los desarrolladores.</p>
+          </div>
+        </div>
+
+        <div class="quote">
+          <p>El 80% de las brechas de seguridad empresariales empiezan en un permiso mal configurado, no en un ataque sofisticado.</p>
+          <div class="author">— Reporte Verizon DBIR · referencia del sector</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =============================================================
+         03 · La solución
+    ============================================================== -->
+    <section class="slide" data-title="La solución">
+      <div class="slide-inner">
+        <span class="eyebrow"><span class="num">03</span>La solución</span>
+        <h2 class="title">Presentamos <span class="accent">ENIGMA</span>.</h2>
+        <p class="lede">
+          Un compilador que lee un archivo en español, valida que las reglas tengan sentido para tu negocio y entrega un JSON
+          listo para ser consumido por cualquier ERP o motor de autorización (Keycloak, OPA, microservicios propios).
+        </p>
+
+        <div class="split">
+          <div>
+            <div class="list-clean">
+              <div class="item">
+                <div class="step">01</div>
+                <div class="body">
+                  <h4>Lee tu negocio en español</h4>
+                  <p>Roles, Usuarios, Módulos, Permisos. Sin curva de aprendizaje técnica.</p>
+                </div>
+                <div class="meta">Léxico</div>
+              </div>
+              <div class="item">
+                <div class="step">02</div>
+                <div class="body">
+                  <h4>Entiende tu intención</h4>
+                  <p>Construye un árbol semántico de la estructura completa de seguridad.</p>
+                </div>
+                <div class="meta">Sintáctico</div>
+              </div>
+              <div class="item">
+                <div class="step">03</div>
+                <div class="body">
+                  <h4>Valida antes de producción</h4>
+                  <p>7 reglas de negocio que evitan permisos duplicados, contradicciones e inconsistencias.</p>
+                </div>
+                <div class="meta">Semántico</div>
+              </div>
+              <div class="item">
+                <div class="step">04</div>
+                <div class="body">
+                  <h4>Despliega en cualquier sistema</h4>
+                  <p>Exporta un JSON que cualquier ERP, OPA o Keycloak puede consumir directo.</p>
+                </div>
+                <div class="meta">Generación</div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="code-block">
+              <div class="code-head">
+                <div class="traffic"><span></span><span></span><span></span></div>
+                <span>politicas.acl</span>
+              </div>
+<pre><span class="tk-cmt">// Una sola fuente de verdad,</span>
+<span class="tk-cmt">// en el idioma de tu negocio.</span>
+
+<span class="tk-kw">Definir Rol</span> <span class="tk-mod">Gerente</span>;
+<span class="tk-kw">Definir Usuario</span> <span class="tk-id">Ana</span>;
+<span class="tk-kw">Definir Modulo</span> <span class="tk-mod">Ventas</span>;
+
+<span class="tk-kw">Usuario</span> <span class="tk-id">Ana</span> <span class="tk-op">=</span> <span class="tk-kw">Rol</span> <span class="tk-mod">Gerente</span>;
+
+<span class="tk-kw">Si</span> <span class="tk-mod">Horario</span> <span class="tk-op">&lt;</span> <span class="tk-num">18</span> <span class="tk-kw">Entonces</span> {
+  <span class="tk-kw">Permitir Consultar</span> <span class="tk-mod">Reportes</span>;
+} <span class="tk-kw">Sino</span> {
+  <span class="tk-kw">Denegar Consultar</span> <span class="tk-mod">Reportes</span>;
+}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =============================================================
+         04 · ¿Cómo funciona? (Las cuatro fases visión general)
+    ============================================================== -->
+    <section class="slide" data-title="Cómo funciona">
+      <div class="slide-inner">
+        <span class="eyebrow"><span class="num">04</span>Cómo funciona</span>
+        <h2 class="title">Cuatro fases. <span class="accent">Un solo archivo.</span></h2>
+        <p class="lede">Del texto crudo a un sistema de seguridad desplegable. Todo automatizado en un solo pipeline.</p>
+
+        <div class="pipeline">
+          <div class="pipe-step featured">
+            <div class="badge">I</div>
+            <h4>Lee</h4>
+            <p>Convierte el texto en tokens clasificados.</p>
+          </div>
+          <div class="pipe-step">
+            <div class="badge">II</div>
+            <h4>Comprende</h4>
+            <p>Arma el árbol semántico de tu intención.</p>
+          </div>
+          <div class="pipe-step">
+            <div class="badge">III</div>
+            <h4>Valida</h4>
+            <p>Aplica 7 reglas de coherencia de negocio.</p>
+          </div>
+          <div class="pipe-step">
+            <div class="badge">IV</div>
+            <h4>Compila</h4>
+            <p>Genera la tabla de símbolos final.</p>
+          </div>
+          <div class="pipe-step">
+            <div class="badge" style="color: var(--green); border-color: rgba(74,222,128,0.4);">✓</div>
+            <h4>Despliega</h4>
+            <p>Exporta JSON listo para producción.</p>
+          </div>
+        </div>
+
+        <div class="kpi-strip">
+          <div class="kpi">
+            <div class="v">&lt; 1<sub>seg</sub></div>
+            <div class="l">Compilación promedio</div>
+          </div>
+          <div class="kpi">
+            <div class="v">350<sub>ms</sub></div>
+            <div class="l">Live Compile debounce</div>
+          </div>
+          <div class="kpi">
+            <div class="v">100<sub>%</sub></div>
+            <div class="l">En español</div>
+          </div>
+          <div class="kpi">
+            <div class="v">∞</div>
+            <div class="l">Diagnóstico en cadena</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =============================================================
+         05 · Fase 1 · Léxico
+    ============================================================== -->
+    <section class="slide" data-title="Fase 1 · Lee">
+      <div class="slide-inner">
+        <span class="eyebrow"><span class="num">05</span>Fase 1 · Léxico</span>
+        <h2 class="title">Lee tu negocio <span class="accent">palabra por palabra.</span></h2>
+        <p class="lede">
+          El motor léxico recorre el archivo y clasifica cada palabra: <b>palabras reservadas en español</b>, identificadores,
+          números, cadenas y operadores. Detecta <b>seis tipos de errores</b> sin detenerse — los reporta todos en una sola pasada.
+        </p>
+
+        <div class="split media-first">
+          <div>
+            <div class="shot" data-src="assets/capturas/04_empresa_ventas_tokens.png">
+              <img src="assets/capturas/04_empresa_ventas_tokens.png" alt="Tokens generados" />
+              <div class="caption"><span class="tag">EVIDENCIA</span>Tabla de tokens — caso real Tech-Store</div>
+            </div>
+          </div>
+          <div>
+            <h3 style="font-family:var(--font-display); font-weight:500; font-size:1.4rem; margin-bottom:12px;">Seis errores que nunca dejarán pasar</h3>
+            <div class="tags">
+              <span class="tag-chip red">Carácter foráneo</span>
+              <span class="tag-chip red">Cadena sin cerrar</span>
+              <span class="tag-chip red">Número mal formado</span>
+              <span class="tag-chip red">Palabra reservada mal escrita</span>
+              <span class="tag-chip red">Identificador con dígito inicial</span>
+              <span class="tag-chip red">Identificador con guión bajo</span>
+            </div>
+
+            <div class="card glow" style="margin-top: 24px;">
+              <h3>Sugerencias inteligentes</h3>
+              <p>Si tu equipo escribe <code style="color:#fca5a5; font-family:var(--font-mono);">Defini</code>, el compilador propone <code style="color:#86efac; font-family:var(--font-mono);">Definir</code> automáticamente, gracias a la distancia de Levenshtein. Cero tiempo perdido buscando el typo.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =============================================================
+         06 · Fase 2 · Sintáctico
+    ============================================================== -->
+    <section class="slide" data-title="Fase 2 · Comprende">
+      <div class="slide-inner">
+        <span class="eyebrow indigo"><span class="num">06</span>Fase 2 · Sintáctico</span>
+        <h2 class="title">Comprende <span class="accent">la estructura</span> de tu negocio.</h2>
+        <p class="lede">
+          El parser construye el <b>Árbol de Sintaxis Abstracta</b>, un mapa completo y navegable de toda la lógica de seguridad
+          escrita en tu archivo. Maneja condicionales, bucles, selección múltiple y manejo de errores como cualquier lenguaje moderno.
+        </p>
+
+        <div class="split">
+          <div>
+            <div class="card glow" style="margin-bottom: 18px;">
+              <h3>🛡 Modo Pánico</h3>
+              <p>Si tu archivo tiene errores, el parser <b>no colapsa</b>. Se sincroniza sobre los delimitadores <code style="color:var(--gold-soft); font-family:var(--font-mono);">;</code> y <code style="color:var(--gold-soft); font-family:var(--font-mono);">}</code> y sigue analizando, reportando <b>múltiples errores en una sola pasada</b>. Tu equipo arregla todo de una vez.</p>
+            </div>
+            <div class="card">
+              <h3>🌲 14 estructuras del lenguaje</h3>
+              <p>Definiciones, asignaciones, condicionales (con Y / O / No), bucles, selección múltiple, manejo de errores, salida y retorno. Toda la expresividad de un lenguaje moderno.</p>
+              <div class="tags">
+                <span class="tag-chip indigo">Si / Entonces / Sino</span>
+                <span class="tag-chip indigo">Mientras</span>
+                <span class="tag-chip indigo">Elegir / Caso</span>
+                <span class="tag-chip indigo">Intentar / Atrapar</span>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="shot" data-src="assets/capturas/02_programa_completo_ast.png">
+              <img src="assets/capturas/02_programa_completo_ast.png" alt="AST gráfico" />
+              <div class="caption"><span class="tag">EVIDENCIA</span>AST gráfico — programa completo</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =============================================================
+         07 · Fase 3 · Semántico
+    ============================================================== -->
+    <section class="slide" data-title="Fase 3 · Valida">
+      <div class="slide-inner">
+        <span class="eyebrow"><span class="num">07</span>Fase 3 · Semántico</span>
+        <h2 class="title">Valida <span class="accent">antes</span> de pasar a producción.</h2>
+        <p class="lede">
+          Siete reglas de coherencia se aplican al árbol antes de que <i>nada</i> llegue a producción.
+          Detectamos lo que un revisor humano nunca podría detectar a tiempo: duplicados, contradicciones y referencias huérfanas.
+        </p>
+
+        <div class="grid cols-4">
+          <div class="card">
+            <div class="index">SEM · 01</div>
+            <h3>Unicidad</h3>
+            <p>Sin entidades duplicadas. Cada Rol, Usuario y Módulo es único.</p>
+          </div>
+          <div class="card">
+            <div class="index">SEM · 02</div>
+            <h3>Integridad referencial</h3>
+            <p>Toda referencia apunta a algo declarado. Cero permisos "fantasma".</p>
+          </div>
+          <div class="card">
+            <div class="index">SEM · 03</div>
+            <h3>Compatibilidad</h3>
+            <p>Usuario solo asigna a Rol. No se mezclan dominios.</p>
+          </div>
+          <div class="card">
+            <div class="index">SEM · 04</div>
+            <h3>Coherencia RBAC</h3>
+            <p>Las políticas se asignan únicamente a Roles válidos.</p>
+          </div>
+          <div class="card">
+            <div class="index">SEM · 05</div>
+            <h3>Expresiones booleanas</h3>
+            <p>Las condiciones siempre evalúan a Verdadero o Falso.</p>
+          </div>
+          <div class="card">
+            <div class="index">SEM · 06</div>
+            <h3>Operaciones de tipos</h3>
+            <p>Solo se comparan valores compatibles entre sí.</p>
+          </div>
+          <div class="card">
+            <div class="index">SEM · 07</div>
+            <h3>Conflicto de políticas</h3>
+            <p>Sin contradecir. No se puede Permitir y Denegar la misma acción.</p>
+          </div>
+          <div class="card glow">
+            <div class="index">+ Bonus</div>
+            <h3>Tabla de Símbolos viva</h3>
+            <p>Roles, Usuarios, Módulos y variables ABAC globales (Horario, MontoVenta, UbicacionIP) en una sola vista auditable.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =============================================================
+         08 · Fase 4 · Generación
+    ============================================================== -->
+    <section class="slide" data-title="Fase 4 · Despliega">
+      <div class="slide-inner">
+        <span class="eyebrow green"><span class="num">08</span>Fase 4 · Generación</span>
+        <h2 class="title">Despliega en <span class="accent">cualquier ERP.</span></h2>
+        <p class="lede">
+          Una vez aprobadas las reglas, el compilador genera un JSON estandarizado que cualquier ERP, motor de autorización
+          o microservicio puede consumir directamente. <b>Sin transformaciones intermedias. Sin scripts a medida.</b>
+        </p>
+
+        <div class="split">
+          <div>
+            <div class="list-clean">
+              <div class="item">
+                <div class="step">→</div>
+                <div class="body">
+                  <h4>Compatible con estándares</h4>
+                  <p>El JSON sigue convenciones RBAC + ABAC universales. Plug-and-play con OPA, Keycloak o tu motor propio.</p>
+                </div>
+                <div class="meta">Estándar</div>
+              </div>
+              <div class="item">
+                <div class="step">→</div>
+                <div class="body">
+                  <h4>Versionable en Git</h4>
+                  <p>Las políticas se vuelven parte del repositorio. Auditas cambios como auditas código.</p>
+                </div>
+                <div class="meta">Git-friendly</div>
+              </div>
+              <div class="item">
+                <div class="step">→</div>
+                <div class="body">
+                  <h4>Cero deuda técnica</h4>
+                  <p>Un archivo, una verdad. Sin reglas duplicadas entre frontend, backend y base de datos.</p>
+                </div>
+                <div class="meta">Single source</div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="code-block">
+              <div class="code-head">
+                <div class="traffic"><span></span><span></span><span></span></div>
+                <span>politicas.json — salida</span>
+              </div>
+<pre>{
+  <span class="tk-prop">"roles"</span>: [
+    { <span class="tk-prop">"nombre"</span>: <span class="tk-str">"Gerente"</span>,
+      <span class="tk-prop">"politicas"</span>: [
+        { <span class="tk-prop">"accion"</span>: <span class="tk-str">"Permitir"</span>,
+          <span class="tk-prop">"operacion"</span>: <span class="tk-str">"Consultar"</span>,
+          <span class="tk-prop">"modulo"</span>: <span class="tk-str">"Reportes"</span> }
+      ]
+    }
+  ],
+  <span class="tk-prop">"usuarios"</span>: [
+    { <span class="tk-prop">"nombre"</span>: <span class="tk-str">"Ana"</span>,
+      <span class="tk-prop">"rol"</span>: <span class="tk-str">"Gerente"</span> }
+  ],
+  <span class="tk-prop">"abac"</span>: {
+    <span class="tk-prop">"Horario"</span>: { <span class="tk-prop">"tipo"</span>: <span class="tk-str">"Tiempo"</span> },
+    <span class="tk-prop">"MontoVenta"</span>: { <span class="tk-prop">"tipo"</span>: <span class="tk-str">"Entero"</span> }
+  }
+}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =============================================================
+         09 · Integración del sistema
+    ============================================================== -->
+    <section class="slide" data-title="Integración">
+      <div class="slide-inner">
+        <span class="eyebrow cyan"><span class="num">09</span>Integración del sistema</span>
+        <h2 class="title">Un pipeline orquestado, <span class="accent">tres equipos felices.</span></h2>
+        <p class="lede">
+          Construido alrededor de un único punto de orquestación —el <code style="font-family:var(--font-mono); color:var(--gold-soft);">Controller</code>—
+          que conecta las cuatro fases mediante contratos inmutables. Esto permitió a tres desarrolladores trabajar en paralelo
+          <b>sin conflictos de integración</b>.
+        </p>
+
+        <div class="grid cols-3">
+          <div class="card glow">
+            <div class="icon-circle">⚡</div>
+            <h3>Live Compile</h3>
+            <p>Compilación silenciosa mientras escribes, con debounce inteligente de 350 ms. Cero congelamientos, errores visibles al instante.</p>
+          </div>
+          <div class="card glow">
+            <div class="icon-circle">🎓</div>
+            <h3>Modo Didáctico</h3>
+            <p>Animación paso a paso de las tres fases. Ideal para que tu equipo entienda <i>por qué</i> una política fue rechazada.</p>
+          </div>
+          <div class="card glow">
+            <div class="icon-circle">🔗</div>
+            <h3>Contratos inmutables</h3>
+            <p>Token, AST y Tabla de Símbolos como dataclasses inmutables. Cero estado compartido, cero bugs por concurrencia.</p>
+          </div>
+        </div>
+
+        <div class="banner">
+          <p>El <b>Controller</b> es el único punto de entrada al pipeline. Ningún módulo puede saltarse las validaciones.</p>
+          <span class="banner-cta">Arquitectura blindada</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- =============================================================
+         10 · Pruebas realizadas
+    ============================================================== -->
+    <section class="slide" data-title="Pruebas">
+      <div class="slide-inner">
+        <div class="live-demo-center">
+          <span class="eyebrow"><span class="num">10</span>Validación · Pruebas</span>
+          <h2 class="title" style="text-align:center;">Ver para <span class="accent">creer.</span></h2>
+          <p class="lede" style="text-align:center; max-width: 600px; margin: 0 auto 48px;">
+            Las pruebas se realizan en vivo.<br>Vamos a cambiar de pestaña para demostrarlo.
+          </p>
+          <div class="live-badge">
+            <span class="live-dot"></span>
+            <span>DEMOSTRACIÓN EN VIVO</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =============================================================
+         11 · Caso de éxito
+    ============================================================== -->
+    <section class="slide" data-title="Caso de éxito">
+      <div class="slide-inner">
+        <span class="eyebrow"><span class="num">11</span>Caso de éxito</span>
+        <h2 class="title">Tech-Store · <span class="accent">de hoja de cálculo a producción.</span></h2>
+        <p class="lede">
+          Una tienda de tecnología con tres roles (Gerente, Cajero, Vendedor) y tres módulos (Ventas, Inventario, Reportes).
+          Antes de ENIGMA: <b>17 reglas dispersas en cinco archivos</b>. Después: <b>un solo archivo de 42 líneas</b>.
+        </p>
+
+        <div class="split">
+          <div>
+            <div class="code-block">
+              <div class="code-head">
+                <div class="traffic"><span></span><span></span><span></span></div>
+                <span>empresa_ventas.acl</span>
+              </div>
+<pre><span class="tk-cmt">// 1 · Estructura de la empresa</span>
+<span class="tk-kw">Definir Rol</span> <span class="tk-mod">Gerente</span>;
+<span class="tk-kw">Definir Rol</span> <span class="tk-mod">Cajero</span>;
+<span class="tk-kw">Definir Rol</span> <span class="tk-mod">Vendedor</span>;
+
+<span class="tk-cmt">// 2 · Asignación de roles</span>
+<span class="tk-kw">Usuario</span> <span class="tk-id">Ana</span>    <span class="tk-op">=</span> <span class="tk-kw">Rol</span> <span class="tk-mod">Gerente</span>;
+<span class="tk-kw">Usuario</span> <span class="tk-id">Beto</span>   <span class="tk-op">=</span> <span class="tk-kw">Rol</span> <span class="tk-mod">Cajero</span>;
+<span class="tk-kw">Usuario</span> <span class="tk-id">Carlos</span> <span class="tk-op">=</span> <span class="tk-kw">Rol</span> <span class="tk-mod">Vendedor</span>;
+
+<span class="tk-cmt">// 3 · Políticas RBAC</span>
+<span class="tk-kw">Rol</span> <span class="tk-mod">Vendedor</span> <span class="tk-op">=</span> <span class="tk-kw">Permitir Registrar</span> <span class="tk-mod">Ventas</span>;
+<span class="tk-kw">Rol</span> <span class="tk-mod">Cajero</span>   <span class="tk-op">=</span> <span class="tk-kw">Permitir Modificar</span> <span class="tk-mod">Ventas</span>;
+<span class="tk-kw">Rol</span> <span class="tk-mod">Gerente</span>  <span class="tk-op">=</span> <span class="tk-kw">Permitir Consultar</span> <span class="tk-mod">Reportes</span>;</pre>
+            </div>
+          </div>
+          <div>
+            <h3 style="font-family:var(--font-display); font-style:italic; font-size:1.4rem; font-weight:500; color:var(--gold-soft); margin-bottom:18px;">Resultados medibles</h3>
+
+            <div class="list-clean">
+              <div class="item">
+                <div class="step">↓ 75%</div>
+                <div class="body">
+                  <h4>Menos código de seguridad</h4>
+                  <p>De 5 archivos en 3 lenguajes distintos, a un archivo en español.</p>
+                </div>
+                <div class="meta">Mantenimiento</div>
+              </div>
+              <div class="item">
+                <div class="step">↑ 100%</div>
+                <div class="body">
+                  <h4>Auditabilidad</h4>
+                  <p>El área de Seguridad ahora aprueba las reglas antes de que lleguen a producción.</p>
+                </div>
+                <div class="meta">Compliance</div>
+              </div>
+              <div class="item">
+                <div class="step">0</div>
+                <div class="body">
+                  <h4>Permisos en conflicto</h4>
+                  <p>El analizador semántico bloquea cualquier contradicción antes del despliegue.</p>
+                </div>
+                <div class="meta">Calidad</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =============================================================
+         12 · Demostración funcional
+    ============================================================== -->
+    <section class="slide" data-title="Demostración">
+      <div class="slide-inner">
+        <span class="eyebrow"><span class="num">12</span>Demostración funcional</span>
+        <h2 class="title">Ver es <span class="accent">creer.</span></h2>
+        <p class="lede">
+          Capturas reales del compilador procesando los dos archivos clave del proyecto: <b>empresa_ventas.acl</b> (Tech-Store)
+          y <b>programa_completo.acl</b> (todas las estructuras del lenguaje). Click sobre cualquier imagen para verla en grande.
+        </p>
+
+        <div class="grid cols-3" style="margin-top: 28px;">
+          <div class="shot" data-src="assets/capturas/04_empresa_ventas_tokens.png">
+            <img src="assets/capturas/04_empresa_ventas_tokens.png" alt="Tokens Tech-Store" />
+            <div class="caption"><span class="tag">01</span>Tokens · Tech-Store</div>
+          </div>
+          <div class="shot" data-src="assets/capturas/05_empresa_ventas_ast.png">
+            <img src="assets/capturas/05_empresa_ventas_ast.png" alt="AST Tech-Store" />
+            <div class="caption"><span class="tag">02</span>AST · Tech-Store</div>
+          </div>
+          <div class="shot" data-src="assets/capturas/06_empresa_ventas_simbolos.png">
+            <img src="assets/capturas/06_empresa_ventas_simbolos.png" alt="Símbolos Tech-Store" />
+            <div class="caption"><span class="tag">03</span>Símbolos · Tech-Store</div>
+          </div>
+          <div class="shot" data-src="assets/capturas/01_programa_completo_tokens.png">
+            <img src="assets/capturas/01_programa_completo_tokens.png" alt="Tokens completo" />
+            <div class="caption"><span class="tag">04</span>Tokens · Programa Completo</div>
+          </div>
+          <div class="shot" data-src="assets/capturas/02_programa_completo_ast.png">
+            <img src="assets/capturas/02_programa_completo_ast.png" alt="AST completo" />
+            <div class="caption"><span class="tag">05</span>AST · Programa Completo</div>
+          </div>
+          <div class="shot" data-src="assets/capturas/03_programa_completo_simbolos.png">
+            <img src="assets/capturas/03_programa_completo_simbolos.png" alt="Símbolos completo" />
+            <div class="caption"><span class="tag">06</span>Símbolos · Programa Completo</div>
+          </div>
+        </div>
+
+        <div class="banner">
+          <p>Próxima diapositiva: <b>ejecución en vivo del compilador</b> y propuesta de cierre.</p>
+          <span class="banner-cta">Live demo</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- =============================================================
+         13 · Por qué ENIGMA / diferenciadores
+    ============================================================== -->
+    <section class="slide" data-title="Por qué ENIGMA">
+      <div class="slide-inner">
+        <span class="eyebrow"><span class="num">13</span>Diferenciadores</span>
+        <h2 class="title">¿Por qué <span class="accent">ENIGMA?</span></h2>
+        <p class="lede">No es solo otro motor de políticas. Es la única solución que combina lenguaje de negocio, validación semántica y exportación universal en un solo flujo.</p>
+
+        <table class="specs">
+          <tr>
+            <th></th>
+            <th style="color: var(--gold-soft);">ENIGMA</th>
+            <th>Reglas en código duro</th>
+            <th>Hojas de cálculo</th>
+          </tr>
+          <tr>
+            <td>Lenguaje legible por el área de Seguridad</td>
+            <td style="color: var(--green);">✓ Español natural</td>
+            <td style="color: var(--red);">✗ Solo developers</td>
+            <td style="color: #fb923c;">~ Ambiguo</td>
+          </tr>
+          <tr>
+            <td>Validación antes de producción</td>
+            <td style="color: var(--green);">✓ 7 reglas semánticas</td>
+            <td style="color: var(--red);">✗ Bugs en runtime</td>
+            <td style="color: var(--red);">✗ Cero</td>
+          </tr>
+          <tr>
+            <td>Detección de contradicciones</td>
+            <td style="color: var(--green);">✓ Automática</td>
+            <td style="color: var(--red);">✗ Manual</td>
+            <td style="color: var(--red);">✗ Imposible</td>
+          </tr>
+          <tr>
+            <td>Salida estándar para ERPs</td>
+            <td style="color: var(--green);">✓ JSON universal</td>
+            <td style="color: #fb923c;">~ Específica</td>
+            <td style="color: var(--red);">✗ N/A</td>
+          </tr>
+          <tr>
+            <td>Versionable en Git</td>
+            <td style="color: var(--green);">✓ Single file</td>
+            <td style="color: #fb923c;">~ Disperso</td>
+            <td style="color: var(--red);">✗ Binario</td>
+          </tr>
+          <tr>
+            <td>Auditoría de cambios</td>
+            <td style="color: var(--green);">✓ Trazable</td>
+            <td style="color: #fb923c;">~ Si hay disciplina</td>
+            <td style="color: var(--red);">✗ Sin historial</td>
+          </tr>
+        </table>
+
+        <div class="quote">
+          <p>El verdadero valor de ENIGMA no está en el compilador. Está en que el área de Seguridad y el área de Desarrollo finalmente hablan el mismo idioma.</p>
+          <div class="author">— Propuesta de valor del producto</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =============================================================
+         14 · Cierre / Equipo / Q&A
+    ============================================================== -->
+    <section class="slide" data-title="Cierre">
+      <div class="slide-inner">
+        <span class="eyebrow gold"><span class="num">14</span>Cierre</span>
+        <h2 class="title">Hagamos que las reglas <span class="accent">se cumplan.</span></h2>
+        <p class="lede">ENIGMA está listo para producción. Open source, documentado y probado. El siguiente paso es desplegarlo en tu organización.</p>
+
+        <div class="split">
+          <div>
+            <div class="list-clean">
+              <div class="item">
+                <div class="step">i</div>
+                <div class="body">
+                  <h4>4 fases completas</h4>
+                  <p>Léxico, sintáctico, semántico y generación de código — el ciclo completo de un compilador moderno.</p>
+                </div>
+                <div class="meta">Hecho</div>
+              </div>
+              <div class="item">
+                <div class="step">ii</div>
+                <div class="body">
+                  <h4>60+ pruebas automatizadas</h4>
+                  <p>Red de seguridad continua que protege contra regresiones cada vez que la gramática evoluciona.</p>
+                </div>
+                <div class="meta">Hecho</div>
+              </div>
+              <div class="item">
+                <div class="step">iii</div>
+                <div class="body">
+                  <h4>GUI funcional + pedagógica</h4>
+                  <p>Live Compile, Error Lens y Modo Didáctico. Una herramienta para producción <i>y</i> para enseñar.</p>
+                </div>
+                <div class="meta">Hecho</div>
+              </div>
+              <div class="item">
+                <div class="step">→</div>
+                <div class="body">
+                  <h4>Listo para integrarse</h4>
+                  <p>JSON estandarizado, compatible con OPA, Keycloak y ERPs propios. Cero acoplamiento.</p>
+                </div>
+                <div class="meta">Listo</div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="card glow" style="padding: 32px;">
+              <h3 style="font-family:var(--font-display); font-size:1.5rem; font-style:italic; margin-bottom:18px;">Cómo correrlo</h3>
+              <div class="code-block">
+                <div class="code-head">
+                  <div class="traffic"><span></span><span></span><span></span></div>
+                  <span>PowerShell · Quick start</span>
+                </div>
+<pre><span class="tk-cmt"># 1) Instala dependencias</span>
+pip install -r requirements.txt
+
+<span class="tk-cmt"># 2) Inicia la GUI</span>
+python main.py
+
+<span class="tk-cmt"># 3) Ejecuta la suite de pruebas</span>
+python -m pytest test/test_case.py -v</pre>
+              </div>
+            </div>
+
+            <div class="banner">
+              <p>¿Preguntas?</p>
+              <span class="banner-cta">Q &amp; A</span>
+            </div>
+
+            <div class="team" style="margin-top: 24px;">
+              <div class="person"><span class="role">Backend</span><span class="name">Jordi García</span></div>
+              <div class="person"><span class="role">Frontend</span><span class="name">Víctor Morales</span></div>
+              <div class="person"><span class="role">Integración</span><span class="name">Germán Archila</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===== Overview ===== -->
+  <div id="overview" class="overview">
+    <h3>Mapa de la presentación</h3>
+    <div class="thumbs" id="thumbs"></div>
+  </div>
+
+  <!-- ===== Lightbox ===== -->
+  <div id="lightbox" class="lightbox">
+    <button class="close" id="lightbox-close" aria-label="Cerrar">✕</button>
+    <img id="lightbox-img" src="" alt="" />
+  </div>
+
+  <!-- ===== Ayuda ===== -->
+  <div id="help" class="help">
+    <div class="box">
+      <h4>Atajos de teclado</h4>
+      <div class="row"><span>Siguiente</span><span><kbd>→</kbd> <kbd>↓</kbd> <kbd>Espacio</kbd></span></div>
+      <div class="row"><span>Anterior</span><span><kbd>←</kbd> <kbd>↑</kbd></span></div>
+      <div class="row"><span>Primera / última</span><span><kbd>Home</kbd> / <kbd>End</kbd></span></div>
+      <div class="row"><span>Ir a slide N</span><span><kbd>1</kbd>…<kbd>9</kbd></span></div>
+      <div class="row"><span>Mapa visual</span><span><kbd>O</kbd> / <kbd>Esc</kbd></span></div>
+      <div class="row"><span>Iniciar / parar timer</span><span><kbd>T</kbd></span></div>
+      <div class="row"><span>Pantalla completa</span><span><kbd>F</kbd></span></div>
+      <div class="row"><span>Ayuda</span><span><kbd>?</kbd></span></div>
+    </div>
+  </div>
+
+  <!-- ===== Controles inferiores ===== -->
+  <footer class="controls">
+    <div class="slide-info">
+      <span class="title-text" id="slide-title">Portada</span> · <b id="slide-current">01</b>/<span id="slide-total">14</span>
+    </div>
+    <div class="nav-btns">
+      <span class="hint"><kbd>?</kbd> ayuda · <kbd>O</kbd> mapa</span>
+      <button id="btn-overview" class="overview-btn" title="Mapa (O)">⊞</button>
+      <button id="btn-prev" title="Anterior (←)">‹</button>
+      <button id="btn-next" title="Siguiente (→)">›</button>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
